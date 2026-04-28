@@ -1,5 +1,5 @@
 from core.navigation import NAVIGATION
-from core.network import get_access_ips
+from core.network import get_request_access_ips
 
 
 def _is_visible(user, item):
@@ -48,7 +48,7 @@ def _filter_items(user, items):
 def navigation(request):
     current_view = getattr(request.resolver_match, "view_name", "")
     navigation_items = _filter_items(request.user, NAVIGATION)
-    private_ip, public_ip, current_node = get_access_ips()
+    private_ip, public_ip, current_node = get_request_access_ips(request)
 
     for item in navigation_items:
         children = item.get("children")

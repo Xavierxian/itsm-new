@@ -1,5 +1,6 @@
 import re
 import socket
+from ipaddress import ip_address
 from urllib import request as urllib_request
 
 from core.cache_helpers import cache_get, cache_set
@@ -91,3 +92,105 @@ def get_access_ips():
     }
     cache_set(ACCESS_IP_CACHE_KEY, payload, timeout=ACCESS_IP_CACHE_TTL)
     return payload["private_ip"], payload["public_ip"], payload["current_node"]
+
+
+def _normalize_ip_token(value):
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    if token.startswith("[") and "]" in token:
+        token = token[1 : token.index("]")]
+    if token.count(":") == 1 and "." in token:
+        token = token.split(":", 1)[0]
+    lowered = token.lower()
+    if lowered in {"unknown", "none", "null", "-"}:
+        return ""
+    return token
+
+
+def _is_private_or_local(ip_text):
+    try:
+        parsed = ip_address(ip_text)
+    except ValueError:
+        return False
+    return (
+        parsed.is_private
+        or parsed.is_loopback
+        or parsed.is_link_local
+        or parsed.is_reserved
+        or parsed.is_multicast
+    )
+
+
+def _is_public_ip(ip_text):
+    try:
+        parsed = ip_address(ip_text)
+    except ValueError:
+        return False
+    return bool(parsed.is_global)
+
+
+def split_private_public_ips(ip_text):
+    normalized = _normalize_ip_token(ip_text)
+    if not normalized:
+        return "-", "-"
+    if _is_public_ip(normalized):
+        return "-", normalized
+    if _is_private_or_local(normalized):
+        return normalized, "-"
+    return "-", "-"
+
+
+def get_request_ip_chain(request):
+    if request is None:
+        return []
+
+    chain = []
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded:
+        for part in forwarded.split(","):
+            token = _normalize_ip_token(part)
+            if token:
+                chain.append(token)
+
+    for header in ("HTTP_X_REAL_IP", "HTTP_CF_CONNECTING_IP", "REMOTE_ADDR"):
+        token = _normalize_ip_token(request.META.get(header, ""))
+        if token:
+            chain.append(token)
+
+    # Keep order while de-duplicating.
+    deduped = []
+    seen = set()
+    for token in chain:
+        if token in seen:
+            continue
+        seen.add(token)
+        deduped.append(token)
+    return deduped
+
+
+def get_request_client_ip(request):
+    chain = get_request_ip_chain(request)
+    if chain:
+        return chain[0]
+    return "-"
+
+
+def get_request_access_ips(request):
+    chain = get_request_ip_chain(request)
+    if not chain:
+        return "-", "-", "-"
+
+    private_ip = "-"
+    public_ip = "-"
+
+    for candidate in chain:
+        if private_ip == "-" and _is_private_or_local(candidate):
+            private_ip = candidate
+        if public_ip == "-" and _is_public_ip(candidate):
+            public_ip = candidate
+        if private_ip != "-" and public_ip != "-":
+            break
+
+    current_node = public_ip if public_ip != "-" else private_ip
+    return private_ip, public_ip, current_node

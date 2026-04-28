@@ -3,7 +3,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from django.views.generic import ListView, TemplateView
 
-from core.network import get_access_ips
+from core.network import split_private_public_ips
 from logs.models import AppLogIndex, LoginLog, OperationAuditLog, ResourceChangeLog, SecurityEventLog, TaskExecutionLog
 
 
@@ -306,9 +306,9 @@ def build_operation_audit_entry(obj):
 
 
 def build_login_entry(obj):
-    current_private_ip, current_public_ip, _ = get_access_ips()
-    private_ip = obj.private_ip or current_private_ip or "-"
-    public_ip = obj.public_ip or current_public_ip or "-"
+    fallback_private, fallback_public = split_private_public_ips(obj.ip_address or "")
+    private_ip = obj.private_ip or fallback_private or "-"
+    public_ip = obj.public_ip or fallback_public or "-"
     summary = f"账号“{obj.username}”发起登录，内网 IP 为 {private_ip}，公网出口 IP 为 {public_ip}。"
     if obj.success:
         summary += " 登录成功。"
