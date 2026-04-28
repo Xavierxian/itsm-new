@@ -2,6 +2,7 @@ from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -169,3 +170,64 @@ class LoginCounterConcurrencyTests(TestCase):
             int(cache.get(ip_user_rate_limit_key(ip_address, username)) or 0),
             total_attempts,
         )
+
+
+class UserDeleteViewTests(TestCase):
+    def setUp(self):
+        self.user_model = get_user_model()
+        self.admin_user = self.user_model.objects.create_superuser(
+            username="root-admin",
+            password="Admin@123456",
+            email="root@example.com",
+        )
+        self.target_user = self.user_model.objects.create_user(
+            username="delete-target",
+            password="Target@123456",
+            is_staff=True,
+            status="active",
+        )
+
+    def test_superuser_can_delete_user_from_edit_endpoint(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            reverse("accounts:user-edit", kwargs={"pk": self.target_user.pk}),
+            data={"_action": "delete"},
+            follow=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("accounts:user-list"), fetch_redirect_response=False)
+        self.assertFalse(self.user_model.objects.filter(pk=self.target_user.pk).exists())
+
+    def test_cannot_delete_current_login_user(self):
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            reverse("accounts:user-edit", kwargs={"pk": self.admin_user.pk}),
+            data={"_action": "delete"},
+            follow=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse("accounts:user-edit", kwargs={"pk": self.admin_user.pk}),
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(self.user_model.objects.filter(pk=self.admin_user.pk).exists())
+
+    def test_post_delete_without_delete_permission_is_forbidden(self):
+        manager = self.user_model.objects.create_user(
+            username="manager-only-change",
+            password="Manager@123456",
+            is_staff=True,
+            status="active",
+        )
+        change_permission = Permission.objects.get(codename="change_user")
+        manager.user_permissions.add(change_permission)
+
+        self.client.force_login(manager)
+        response = self.client.post(
+            reverse("accounts:user-edit", kwargs={"pk": self.target_user.pk}),
+            data={"_action": "delete"},
+            follow=False,
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(self.user_model.objects.filter(pk=self.target_user.pk).exists())

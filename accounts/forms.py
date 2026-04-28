@@ -54,6 +54,30 @@ class UserForm(forms.ModelForm):
             ),
         }
 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Avoid browser credential autofill on user create/edit forms.
+        self.fields["username"].widget.attrs.update(
+            {
+                "autocomplete": "off",
+                "autocapitalize": "none",
+                "spellcheck": "false",
+            }
+        )
+        self.fields["password"].widget.attrs.update(
+            {
+                "autocomplete": "new-password",
+                "autocapitalize": "none",
+                "spellcheck": "false",
+            }
+        )
+
+        if not getattr(self.instance, "pk", None):
+            self.initial["username"] = ""
+            self.initial["password"] = ""
+
     def save(self, commit=True):
         original_password = ""
         if self.instance.pk:

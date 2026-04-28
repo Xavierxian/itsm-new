@@ -258,6 +258,16 @@ class UserUpdateView(ManagedUpdateView):
     permission_required = "accounts.change_user"
     page_title = "编辑用户"
     success_url = reverse_lazy("accounts:user-list")
+    allow_delete = True
+    delete_permission_required = "accounts.delete_user"
+    delete_label = "删除用户"
+    delete_confirm_text = "确认删除该用户吗？删除后不可恢复。"
+    delete_success_message = "用户删除成功。"
+
+    def can_delete_object(self, obj):
+        if self.request.user.pk == obj.pk:
+            return False, "不允许删除当前登录账号。"
+        return True, ""
 
 
 class RoleListView(SearchableListView):

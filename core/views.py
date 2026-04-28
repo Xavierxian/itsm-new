@@ -7,6 +7,7 @@ import time
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.db.models import Q
 from django.shortcuts import redirect
@@ -411,6 +412,59 @@ class ManagedUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     template_name = "core/generic_form.html"
     page_title = ""
     success_url = None
+    allow_delete = False
+    delete_permission_required = ""
+    delete_label = "删除"
+    delete_confirm_text = "确认删除这条记录吗？删除后不可恢复。"
+    delete_success_message = ""
+
+    def _required_delete_permission(self):
+        if self.delete_permission_required:
+            return self.delete_permission_required
+        opts = self.model._meta
+        return f"{opts.app_label}.delete_{opts.model_name}"
+
+    def can_delete_object(self, obj):
+        return True, ""
+
+    def user_can_delete(self):
+        if not self.allow_delete:
+            return False
+        return self.request.user.has_perm(self._required_delete_permission())
+
+    def _handle_delete(self):
+        if not self.allow_delete:
+            raise PermissionDenied
+        if not self.user_can_delete():
+            raise PermissionDenied
+
+        self.object = self.get_object()
+        can_delete, deny_reason = self.can_delete_object(self.object)
+        if not can_delete:
+            messages.error(self.request, deny_reason or "当前记录不允许删除。")
+            return redirect(self.request.path)
+
+        object_label = str(self.object)
+        object_model_label = self.object._meta.verbose_name
+        log_operation(
+            user=self.request.user,
+            module=self.model._meta.app_label,
+            action="delete",
+            target=self.object,
+            request=self.request,
+            result="success",
+        )
+        self.object.delete()
+        messages.success(
+            self.request,
+            self.delete_success_message or f"{object_model_label}删除成功：{object_label}",
+        )
+        return redirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("_action") == "delete":
+            return self._handle_delete()
+        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         if hasattr(form.instance, "updated_by"):
@@ -434,4 +488,8 @@ class ManagedUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
         context = super().get_context_data(**kwargs)
         context["page_title"] = self.page_title
         context["submit_label"] = "更新"
+        context["show_delete_button"] = self.user_can_delete()
+        context["delete_label"] = self.delete_label
+        context["delete_confirm_text"] = self.delete_confirm_text
+        context["submit_after_delete"] = False
         return context

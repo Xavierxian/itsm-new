@@ -9063,3 +9063,169 @@ body {
         padding: 10px 11px;
     }
 }
+
+/* Mobile compatibility layer (app pages) */
+@media (max-width: 1024px) {
+    .app-main-v2 {
+        padding: 12px;
+        padding-bottom: max(14px, env(safe-area-inset-bottom));
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .subpage-panel-v2,
+    .list-panel-v4,
+    .panel-v2,
+    .panel-v3,
+    .surface-card {
+        border-radius: 16px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button {
+        min-height: 44px;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    .toolbar,
+    .toolbar-actions,
+    .toolbar-form,
+    .editor-actions,
+    .list-toolbar-v4,
+    .pagination-bar-v4,
+    .pagination-summary-v4 {
+        gap: 10px;
+    }
+
+    .table-shell,
+    .table-shell-v3,
+    .table-shell-v4 {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table,
+    .data-table-v3,
+    .data-table-v4list {
+        min-width: 680px;
+    }
+
+    .table-action-v4 {
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 760px) {
+    .app-header-v2 {
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .header-main-v2,
+    .header-meta-v2 {
+        width: 100%;
+    }
+
+    .header-meta-v2 {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .sidebar-toggle-v2 {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-layout,
+    .role-form-layout-v2,
+    .password-layout-v2,
+    .qualification-layout-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .editor-grid,
+    .role-basic-grid-v2,
+    .overview-grid-v3,
+    .system-health-grid-v3,
+    .dashboard-main-v3,
+    .dashboard-insight-grid-v3 {
+        grid-template-columns: 1fr;
+    }
+
+    .list-panel-v4 {
+        padding: 14px;
+    }
+
+    .list-panel-head-v4 h3 {
+        font-size: 1.08rem;
+        line-height: 1.35;
+    }
+
+    .list-panel-sub-v4 {
+        font-size: 0.88rem;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .list-toolbar-v4 > .primary-button,
+    .list-toolbar-v4 > .secondary-button,
+    .list-toolbar-v4 > .danger-button,
+    .pagination-actions-v4 .secondary-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .list-search-v4 {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .list-search-v4 input,
+    .list-search-v4 select {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .pagination-bar-v4,
+    .pagination-summary-v4,
+    .pagination-size-v4,
+    .pagination-actions-v4 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-main-v2 {
+        padding: 10px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    .summary-strip-v4 {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        overflow: visible;
+    }
+
+    .summary-tile-v4 {
+        width: 100%;
+        min-width: 0;
+        padding: 16px;
+    }
+
+    .summary-copy-v4 strong {
+        font-size: 1.7rem;
+    }
+
+    .data-table,
+    .data-table-v3,
+    .data-table-v4list {
+        min-width: 620px;
+    }
+}
