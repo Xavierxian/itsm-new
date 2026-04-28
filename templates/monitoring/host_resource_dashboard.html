@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+
+{% block content %}
+<section
+    class="surface-card surface-card-spacious subpage-panel-v2 hostmon-page-v2"
+    data-hostmon-page
+    data-data-url="{{ api_data_url }}"
+    data-alerts-url="{{ api_alerts_url }}"
+    data-targets-url="{{ api_targets_url }}"
+    data-default-threshold="{{ default_alert_threshold }}"
+    data-default-refresh-seconds="{{ default_refresh_seconds }}"
+>
+    <div class="hostmon-head-v2">
+        <div>
+            <h3>{{ page_title }}</h3>
+            <p>{{ page_description }}</p>
+        </div>
+        <div class="hostmon-actions-v2">
+            <label class="hostmon-field-inline-v2">
+                <span>告警阈值</span>
+                <input id="hostmon-threshold" type="number" min="0" max="100" value="{{ default_alert_threshold }}">
+            </label>
+            <button id="hostmon-refresh-btn" class="primary-button" type="button">立即刷新</button>
+        </div>
+    </div>
+
+    <div id="hostmon-notice" class="hostmon-notice-v2" hidden></div>
+
+    <section class="hostmon-summary-grid-v2" aria-label="监控摘要">
+        <article class="hostmon-summary-card-v2">
+            <span>主机总数</span>
+            <strong id="hostmon-total-hosts">--</strong>
+        </article>
+        <article class="hostmon-summary-card-v2 hostmon-filter-card-v2" data-hostmon-filter="alert_hosts" data-hostmon-filter-label="告警主机">
+            <span>告警主机</span>
+            <strong id="hostmon-alert-hosts">--</strong>
+        </article>
+        <article class="hostmon-summary-card-v2">
+            <span>告警条数</span>
+            <strong id="hostmon-total-alerts">--</strong>
+        </article>
+        <article class="hostmon-summary-card-v2">
+            <span>采集目标健康</span>
+            <strong id="hostmon-target-health">--</strong>
+        </article>
+    </section>
+
+    <section class="hostmon-threshold-grid-v2" aria-label="阈值统计">
+        <article class="hostmon-threshold-card-v2 is-cpu hostmon-filter-card-v2" data-hostmon-filter="cpu_over_80" data-hostmon-filter-label="CPU > 80%">
+            <strong id="hostmon-cpu-over-80">--</strong>
+            <span>CPU &gt; 80%</span>
+        </article>
+        <article class="hostmon-threshold-card-v2 is-memory hostmon-filter-card-v2" data-hostmon-filter="memory_over_80" data-hostmon-filter-label="内存 > 80%">
+            <strong id="hostmon-memory-over-80">--</strong>
+            <span>内存 &gt; 80%</span>
+        </article>
+        <article class="hostmon-threshold-card-v2 is-root hostmon-filter-card-v2" data-hostmon-filter="root_over_80" data-hostmon-filter-label="ROOT磁盘 > 80%">
+            <strong id="hostmon-root-over-80">--</strong>
+            <span>ROOT磁盘 &gt; 80%</span>
+        </article>
+        <article class="hostmon-threshold-card-v2 is-home hostmon-filter-card-v2" data-hostmon-filter="home_over_80" data-hostmon-filter-label="HOME磁盘 > 80%">
+            <strong id="hostmon-home-over-80">--</strong>
+            <span>HOME磁盘 &gt; 80%</span>
+        </article>
+    </section>
+
+    <div class="hostmon-main-v2">
+        <section class="hostmon-table-panel-v2">
+            <div class="hostmon-toolbar-v2">
+                <label class="hostmon-search-v2">
+                    <span>主机搜索</span>
+                    <input id="hostmon-search" type="search" placeholder="输入实例名 / IP / 部门 / 申请人">
+                </label>
+                <div id="hostmon-filter-indicator" class="hostmon-filter-indicator-v2" hidden></div>
+            </div>
+            <div class="table-shell table-shell-v4 hostmon-table-shell-v2">
+                <table class="data-table data-table-v4list hostmon-table-v2">
+                    <colgroup>
+                        <col class="hostmon-col-ip">
+                        <col class="hostmon-col-user">
+                        <col class="hostmon-col-os">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-mini">
+                        <col class="hostmon-col-flow">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>IP地址</th>
+                            <th>使用人</th>
+                            <th>系统</th>
+                            <th>TCP</th>
+                            <th>CPU</th>
+                            <th>MEM</th>
+                            <th>DISK</th>
+                            <th>UPTIME</th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="cpu_usage">
+                                    <span>CPU%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="memory_usage">
+                                    <span>MEM%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="root_usage">
+                                    <span>ROOT%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="data_usage">
+                                    <span>DATA%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="home_usage">
+                                    <span>HOME%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="xs_usage">
+                                    <span>XS%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="io_usage">
+                                    <span>IO%</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="hostmon-sort-btn-v2" data-hostmon-sort-key="network_mbps">
+                                    <span>流量</span><span class="hostmon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="hostmon-table-body">
+                        <tr>
+                            <td colspan="16">
+                                <div class="empty-inline empty-inline-v4">正在加载监控数据...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</section>
+
+<script src="{% static 'js/monitoring_host_resource.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,21 @@
+[Unit]
+Description=ITSM Production Stack (Web + Celery Worker + Celery Beat)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/itsm/ITSM-NEW
+EnvironmentFile=/opt/itsm/ITSM-NEW/.env
+Environment=DJANGO_ENV=production
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/itsm/ITSM-NEW/.venv/bin/python /opt/itsm/ITSM-NEW/scripts/production_runner.py
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

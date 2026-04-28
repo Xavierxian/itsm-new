@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 | ITSM 平台</title>
+    {% load static %}
+    <link rel="icon" type="image/png" href="{% static 'images/title.png' %}">
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/title.png' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="login-body login-body-v5">
+<main class="login-scene-v5">
+    <section class="login-shell-v5">
+        <aside class="login-hero-v5">
+            <div class="login-brand-v5">
+                <img class="login-brand-image-v5" src="{% static 'images/title.png' %}" alt="BAISON ITSM">
+            </div>
+
+            <div class="login-copy-v5">
+                <span class="login-kicker-v5">Platform Modules</span>
+                <h1>
+                    <span>统一资产与云运维入口</span>
+                    <span>监控、授权、审计全链路闭环</span>
+                </h1>
+                <p>覆盖端口/域名映射、BSECP 授权查询、主机与 K8S 资源监控，以及登录与操作审计留痕。</p>
+            </div>
+
+            <div class="login-feature-grid-v5">
+                <article>
+                    <strong>资产与映射</strong>
+                    <span>虚拟机、物理机、NameSpace、端口与域名映射</span>
+                </article>
+                <article>
+                    <strong>云管家入口</strong>
+                    <span>堡垒机清单与免登录跳转，提升远程运维效率</span>
+                </article>
+                <article>
+                    <strong>监控与任务</strong>
+                    <span>主机、K8S 资源监控与定时任务执行追踪</span>
+                </article>
+                <article>
+                    <strong>权限与审计</strong>
+                    <span>RBAC 权限模型、登录日志、操作与安全事件审计</span>
+                </article>
+            </div>
+        </aside>
+
+        <section class="login-card-v5">
+            <div class="login-card-head-v5">
+                <span class="login-kicker-v5 login-kicker-v5-card">Console Access</span>
+                <h2>登录控制台</h2>
+                <p>请输入账号信息继续访问</p>
+            </div>
+
+            {% if messages %}
+                <div class="toast-stack compact login-alert-stack-v5">
+                    {% for message in messages %}
+                        <div class="toast toast-{{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="login-form-v5" novalidate>
+                {% csrf_token %}
+                {% if next_url %}
+                    <input type="hidden" name="next" value="{{ next_url }}">
+                {% endif %}
+
+                {% for field in form %}
+                    <div class="login-field-v5 {% if field.errors %}has-error{% endif %}">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="login-input-shell-v5">
+                            {{ field }}
+                        </div>
+                        {% if field.errors %}
+                            <small class="field-error">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button class="login-submit-v5" type="submit">登录</button>
+            </form>
+
+            <p class="login-security-hint-v5">安全策略：连续失败 {{ failure_limit }} 次将锁定 {{ lock_minutes }} 分钟。</p>
+            <p class="login-footnote-v5">请使用平台分配的运维账号登录，所有操作将纳入安全审计。</p>
+        </section>
+    </section>
+</main>
+<script src="{% static 'js/login_alert_visibility.js' %}"></script>
+</body>
+</html>

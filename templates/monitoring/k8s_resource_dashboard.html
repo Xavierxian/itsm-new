@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+
+{% block content %}
+<style>
+    .k8smon-main-v2 {
+        align-items: start;
+    }
+
+    .k8smon-main-v2 > .k8smon-panel-v2 {
+        height: auto;
+        align-self: start;
+    }
+</style>
+<section
+    class="surface-card surface-card-spacious subpage-panel-v2 k8smon-page-v2"
+    data-k8smon-page
+    data-summary-url="{{ api_summary_url }}"
+    data-namespaces-url="{{ api_namespaces_url }}"
+    data-nodes-url="{{ api_nodes_url }}"
+    data-trend-url-template="{{ api_trend_url_template }}"
+    data-node-trend-url-template="{{ api_node_trend_url_template }}"
+    data-ai-stream-url-template="{{ api_ai_stream_url_template }}"
+    data-node-ai-stream-url-template="{{ api_node_ai_stream_url_template }}"
+    data-default-refresh-seconds="{{ default_refresh_seconds }}"
+    data-default-trend-hours="{{ default_trend_hours }}"
+>
+    <div class="k8smon-head-v2">
+        <div>
+            <h3>{{ page_title }}</h3>
+            <p>{{ page_description }}</p>
+        </div>
+        <div class="k8smon-actions-v2">
+            <label class="hostmon-field-inline-v2">
+                <span>刷新周期</span>
+                <select id="k8smon-refresh-interval">
+                    <option value="30">30 秒</option>
+                    <option value="{{ default_refresh_seconds }}" selected>{{ default_refresh_seconds }} 秒</option>
+                    <option value="120">120 秒</option>
+                </select>
+            </label>
+            <button id="k8smon-refresh-btn" class="primary-button" type="button">立即刷新</button>
+        </div>
+    </div>
+
+    <section class="k8smon-summary-grid-v2" aria-label="K8S 汇总">
+        <article class="k8smon-summary-card-v2">
+            <span>集群总 CPU</span>
+            <strong id="k8smon-total-cpu">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>集群总内存</span>
+            <strong id="k8smon-total-mem">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>节点数</span>
+            <strong id="k8smon-total-nodes">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>命名空间</span>
+            <strong id="k8smon-total-namespaces">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>POD 总数</span>
+            <strong id="k8smon-total-pods">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>已使用 CPU 总数</span>
+            <strong id="k8smon-used-cpu-total">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2">
+            <span>已使用内存总数</span>
+            <strong id="k8smon-used-mem-total">--</strong>
+        </article>
+        <article class="k8smon-summary-card-v2 is-time">
+            <span>数据时间</span>
+            <strong id="k8smon-updated-at">--</strong>
+        </article>
+    </section>
+
+    <div id="k8smon-notice" class="hostmon-notice-v2" hidden></div>
+
+    <div class="k8smon-main-v2">
+        <section class="k8smon-panel-v2">
+            <div class="k8smon-toolbar-v2">
+                <label class="k8smon-search-v2">
+                    <span>命名空间搜索</span>
+                    <input id="k8smon-search" type="search" placeholder="输入 namespace 过滤">
+                </label>
+                <div class="k8smon-toolbar-meta-v2">
+                    <span>总计: <strong id="k8smon-namespace-count">--</strong></span>
+                </div>
+            </div>
+            <div class="table-shell table-shell-v4 k8smon-table-shell-v2">
+                <table class="data-table data-table-v4list k8smon-table-v2 k8smon-namespace-table-v2">
+                    <thead>
+                        <tr>
+                            <th>命名空间</th>
+                            <th>CPU核</th>
+                            <th>
+                                <button type="button" class="k8smon-sort-btn-v2" data-k8smon-sort-key="k8s_namespace_cpu_per">
+                                    <span>CPU%</span><span class="k8smon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>内存(GB)</th>
+                            <th>
+                                <button type="button" class="k8smon-sort-btn-v2" data-k8smon-sort-key="k8s_namespace_mem_per">
+                                    <span>MEM%</span><span class="k8smon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>
+                                <button type="button" class="k8smon-sort-btn-v2" data-k8smon-sort-key="namespace_pod">
+                                    <span>POD</span><span class="k8smon-sort-icon-v2">↕</span>
+                                </button>
+                            </th>
+                            <th>更新时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="k8smon-namespace-tbody">
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-inline empty-inline-v4">正在加载命名空间监控...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="k8smon-panel-v2">
+            <div class="k8smon-trend-head-v2">
+                <div>
+                    <h4 id="k8smon-trend-title">命名空间趋势</h4>
+                    <p id="k8smon-trend-subtitle">点击左侧命名空间可查看趋势</p>
+                </div>
+                <label class="hostmon-field-inline-v2">
+                    <span>时间范围</span>
+                    <select id="k8smon-trend-hours">
+                        <option value="24">近24小时</option>
+                        <option value="72">近3天</option>
+                        <option value="168">近7天</option>
+                    </select>
+                </label>
+            </div>
+            <div class="k8smon-chart-wrap-v2">
+                <canvas id="k8smon-trend-canvas"></canvas>
+                <div id="k8smon-trend-tooltip" class="k8smon-trend-tooltip-v2" hidden></div>
+                <div id="k8smon-trend-empty" class="k8smon-trend-empty-v2" hidden>暂无趋势数据</div>
+            </div>
+            <div class="k8smon-ai-v2">
+                <div class="k8smon-ai-head-v2">
+                    <h5>AI 分析（自动）</h5>
+                </div>
+                <pre id="k8smon-ai-result" class="k8smon-ai-result-v2">点击左侧命名空间名称后，会自动开始 AI 分析并流式输出结果。</pre>
+            </div>
+        </section>
+    </div>
+
+    <section class="k8smon-panel-v2">
+        <div class="k8smon-toolbar-v2">
+            <h4>节点资源</h4>
+            <span>节点数: <strong id="k8smon-node-count">--</strong></span>
+        </div>
+        <div class="table-shell table-shell-v4 k8smon-table-shell-v2 is-node">
+            <table class="data-table data-table-v4list k8smon-table-v2 k8smon-node-table-v2">
+                <thead>
+                    <tr>
+                        <th>节点IP</th>
+                        <th>总CPU核</th>
+                        <th>CPU已用</th>
+                        <th>CPU%</th>
+                        <th>总内存(GB)</th>
+                        <th>内存已用(GB)</th>
+                        <th>内存%</th>
+                        <th>更新时间</th>
+                    </tr>
+                </thead>
+                <tbody id="k8smon-node-tbody">
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-inline empty-inline-v4">正在加载节点监控...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+
+<div class="confirm-modal k8smon-node-modal-v2" id="k8smon-node-modal" hidden>
+    <div class="confirm-modal-backdrop" data-k8smon-node-close></div>
+    <section class="confirm-modal-card k8smon-node-modal-card-v2" role="dialog" aria-modal="true" aria-labelledby="k8smon-node-modal-title">
+        <div class="k8smon-node-modal-head-v2">
+            <div>
+                <h3 id="k8smon-node-modal-title">节点趋势</h3>
+                <p id="k8smon-node-modal-subtitle">点击节点查看近24小时趋势</p>
+            </div>
+            <div class="k8smon-node-modal-actions-v2">
+                <label class="hostmon-field-inline-v2">
+                    <span>时间范围</span>
+                    <select id="k8smon-node-trend-hours">
+                        <option value="24">近24小时</option>
+                        <option value="72">近3天</option>
+                        <option value="168">近7天</option>
+                    </select>
+                </label>
+                <button type="button" class="secondary-button" data-k8smon-node-close>关闭</button>
+            </div>
+        </div>
+        <div class="k8smon-chart-wrap-v2 k8smon-node-chart-wrap-v2">
+            <canvas id="k8smon-node-trend-canvas"></canvas>
+            <div id="k8smon-node-trend-tooltip" class="k8smon-trend-tooltip-v2" hidden></div>
+            <div id="k8smon-node-trend-empty" class="k8smon-trend-empty-v2" hidden>暂无节点趋势数据</div>
+        </div>
+        <div class="k8smon-trend-legend-v2">
+            <span><i class="is-cpu"></i>CPU%</span>
+            <span><i class="is-memory"></i>内存%</span>
+        </div>
+        <div class="k8smon-ai-v2">
+            <div class="k8smon-ai-head-v2">
+                <h5>AI 分析（自动）</h5>
+            </div>
+            <pre id="k8smon-node-ai-result" class="k8smon-ai-result-v2">打开节点后，会自动开始 AI 分析并流式输出结果。</pre>
+        </div>
+    </section>
+</div>
+
+<script src="{% static 'js/monitoring_k8s_resource.js' %}?v=20260427-k8sstream6"></script>
+{% endblock %}

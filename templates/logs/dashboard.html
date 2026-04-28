@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block page_title %}日志管理{% endblock %}
+{% block page_description %}统一查看登录日志、操作审计、应用日志、任务执行、资源变更和安全事件。{% endblock %}
+
+{% block content %}
+
+<section class="stats-grid">
+    {% for card in cards %}
+        <article class="metric-card">
+            <div class="metric-card-head">
+                <span>{{ card.label }}</span>
+                <span class="metric-pulse"></span>
+            </div>
+            <strong>{{ card.value }}</strong>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="dashboard-grid">
+    <article class="surface-card">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow-label">日志入口</span>
+                <h3>按日志类型查看</h3>
+            </div>
+        </div>
+        <div class="action-grid">
+            <a class="action-card" href="{% url 'logs:login-log-list' %}">
+                <span class="action-badge">01</span>
+                <strong>登录日志</strong>
+                <p>查看账号登录是否成功、来源 IP、失败原因和客户端信息。</p>
+            </a>
+            <a class="action-card" href="{% url 'logs:audit-log-list' %}">
+                <span class="action-badge">02</span>
+                <strong>操作审计日志</strong>
+                <p>按菜单、对象和动作回溯用户做了什么、提交了哪些字段。</p>
+            </a>
+            <a class="action-card" href="{% url 'logs:app-log-list' %}">
+                <span class="action-badge">03</span>
+                <strong>应用日志</strong>
+                <p>查看系统运行摘要、告警级别、错误信息和追踪 ID。</p>
+            </a>
+            <a class="action-card" href="{% url 'logs:task-log-list' %}">
+                <span class="action-badge">04</span>
+                <strong>任务执行日志</strong>
+                <p>查看后台任务执行结果、耗时、参数和错误摘要。</p>
+            </a>
+            <a class="action-card" href="{% url 'logs:resource-change-list' %}">
+                <span class="action-badge">05</span>
+                <strong>资源变更日志</strong>
+                <p>逐条记录资源对象的字段变更前后差异。</p>
+            </a>
+            <a class="action-card" href="{% url 'logs:security-log-list' %}">
+                <span class="action-badge">06</span>
+                <strong>安全事件日志</strong>
+                <p>集中查看异常登录、越权访问和敏感操作告警。</p>
+            </a>
+        </div>
+    </article>
+
+    <article class="surface-card security-breakdown-card">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow-label">风险概览</span>
+                <h3>安全事件分布</h3>
+            </div>
+        </div>
+        <div class="security-breakdown-panel">
+            {% if security_breakdown_total %}
+                <div class="security-breakdown-overview">
+                    <div class="security-breakdown-summary">
+                        <span>事件总数</span>
+                        <strong>{{ security_breakdown_total }}</strong>
+                        <p>当前以 {{ security_breakdown_dominant }} 级事件为主</p>
+                    </div>
+                    <div class="security-breakdown-segments" aria-hidden="true">
+                        {% for item in security_breakdown %}
+                            {% if item.total %}
+                                <span class="security-breakdown-segment tone-{{ item.tone }}" style="width: {{ item.percentage|floatformat:1 }}%;"></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="security-breakdown-list">
+                    {% for item in security_breakdown %}
+                        <div class="security-breakdown-row tone-{{ item.tone }}">
+                            <div class="security-breakdown-row-head">
+                                <div class="security-breakdown-label">
+                                    <span class="security-breakdown-dot tone-{{ item.tone }}"></span>
+                                    <span>{{ item.severity }}</span>
+                                </div>
+                                <div class="security-breakdown-values">
+                                    <strong>{{ item.total }}</strong>
+                                    <span>{{ item.percentage|floatformat:0 }}%</span>
+                                </div>
+                            </div>
+                            <div class="security-breakdown-track" aria-hidden="true">
+                                <span class="security-breakdown-fill tone-{{ item.tone }}" style="width: {{ item.percentage|floatformat:1 }}%;"></span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-inline security-breakdown-empty">暂无安全事件。</div>
+            {% endif %}
+        </div>
+    </article>
+</section>
+
+<section class="surface-card surface-card-spacious">
+    <div class="section-head">
+        <div>
+            <span class="eyebrow-label">Recent Audit</span>
+            <h3>最近审计记录</h3>
+        </div>
+    </div>
+    <div class="log-stream-v2">
+        {% for entry in recent_audit_entries %}
+            <article class="log-entry-v2 tone-{{ entry.tone }}">
+                <div class="log-entry-top-v2">
+                    <div class="log-entry-title-v2">
+                        <span class="log-entry-kicker-v2">{{ entry.category }}</span>
+                        <h4>{{ entry.title }}</h4>
+                    </div>
+                    <span class="log-badge-v2 tone-{{ entry.tone }}">{{ entry.badge }}</span>
+                </div>
+                <div class="log-meta-v2">{{ entry.meta }}</div>
+                <p class="log-summary-v2">{{ entry.summary }}</p>
+            </article>
+        {% empty %}
+            <div class="empty-inline">暂无审计记录。</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

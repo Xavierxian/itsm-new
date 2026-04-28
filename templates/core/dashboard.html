@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}系统概览{% endblock %}
+{% block page_description %}查看平台运行概况、资源规模和近期审计动态。{% endblock %}
+
+{% block content %}
+<div class="dashboard-v3">
+    <section class="system-health-grid-v3">
+        {% for item in health_cards %}
+            <article class="kpi-card-v3 health-card-v3 {{ item.tone_class }}">
+                <span class="kpi-label-v3">{{ item.label }}</span>
+                <strong>{{ item.status_text }}</strong>
+                <p>{{ item.detail }}</p>
+            </article>
+        {% endfor %}
+    </section>
+
+    <section class="overview-grid-v3">
+        <article class="focus-card-v3 focus-card-primary-v3">
+            <span>风险</span>
+            <strong>{{ alerts|length }}</strong>
+            <p>安全事件</p>
+        </article>
+        <article class="focus-card-v3">
+            <span>近期操作</span>
+            <strong>{{ recent_logs|length }}</strong>
+            <p>审计记录</p>
+        </article>
+        {% for stat in stats %}
+            <article class="kpi-card-v3">
+                <span class="kpi-label-v3">{{ stat.label }}</span>
+                <strong>{{ stat.value }}</strong>
+                <p>当前纳管数量</p>
+            </article>
+        {% endfor %}
+    </section>
+
+    
+
+    <section
+        class="dashboard-insight-grid-v3"
+        data-dashboard-monitor
+        data-alerts-url="{{ monitoring_alerts_api_url }}"
+        data-mail-url="{{ monitoring_alert_notify_api_url }}"
+        data-threshold="{{ monitoring_default_alert_threshold }}"
+        data-refresh-seconds="{{ monitoring_refresh_seconds }}"
+    >
+        <article class="panel-v3 dashboard-auth-panel-v3">
+            <div class="dashboard-auth-head-v3">
+                <h3>BSECP授权数据一览表</h3>
+                <div class="dashboard-auth-range-v3" role="tablist" aria-label="授权趋势时间范围">
+                    <button type="button" class="dashboard-auth-range-btn-v3 is-active" data-bsecp-range="week">一周</button>
+                    <button type="button" class="dashboard-auth-range-btn-v3" data-bsecp-range="half_month">半月</button>
+                    <button type="button" class="dashboard-auth-range-btn-v3" data-bsecp-range="month">一月</button>
+                </div>
+            </div>
+            <div class="dashboard-auth-legend-v3" aria-hidden="true">
+                <span><i class="is-success"></i>授权成功</span>
+                <span><i class="is-failure"></i>授权失败</span>
+                <span><i class="is-pending"></i>待处理</span>
+            </div>
+            <div class="dashboard-auth-chart-wrap-v3">
+                <canvas id="dashboard-bsecp-auth-chart" height="340" aria-label="BSECP授权趋势图"></canvas>
+                <div id="dashboard-bsecp-auth-empty" class="dashboard-auth-empty-v3" hidden>暂无授权趋势数据</div>
+                <div id="dashboard-bsecp-auth-tooltip" class="dashboard-auth-tooltip-v3" hidden></div>
+            </div>
+        </article>
+
+        <article class="panel-v3 dashboard-alert-panel-v3">
+            <div class="dashboard-alert-head-v3">
+                <h3>分区告警信息</h3>
+                <div class="dashboard-alert-actions-v3">
+                    <button id="dashboard-monitor-mail-btn" class="secondary-button dashboard-alert-action-btn-v3" type="button">发送邮件通知</button>
+                    <button id="dashboard-monitor-refresh-btn" class="secondary-button dashboard-alert-action-btn-v3" type="button">刷新</button>
+                </div>
+            </div>
+            <div class="dashboard-alert-meta-v3">
+                <span id="dashboard-monitor-alert-time" class="dashboard-monitor-time-v3">--</span>
+            </div>
+            <div id="dashboard-monitor-alert-list" class="dashboard-alert-list-v3">
+                <div class="empty-inline empty-inline-v4">正在加载告警...</div>
+            </div>
+        </article>
+    </section>
+    <script id="dashboard-bsecp-trend-data" type="application/json">{{ bsecp_auth_trend_json|safe }}</script>
+
+    <section class="panel-v3 audit-panel-v3">
+        <div class="panel-head-v3">
+            <div>
+                <span class="panel-kicker-v3">Recent Audit</span>
+                <h3>近期操作审计</h3>
+            </div>
+            <a class="panel-link-v3" href="{% url 'logs:audit-log-list' %}">进入审计日志</a>
+        </div>
+        <div class="table-shell table-shell-v3">
+            <table class="data-table data-table-v3">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>操作人</th>
+                        <th>模块</th>
+                        <th>动作</th>
+                        <th>结果</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                        <tr>
+                            <td>{{ log.occurred_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ log.user|default:"系统" }}</td>
+                            <td>{{ log.module }}</td>
+                            <td>{{ log.action }}</td>
+                            <td><span class="status-pill status-pill-v3">{{ log.result }}</span></td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-inline">暂无审计日志。</div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+<script src="{% static 'js/core_dashboard_monitoring.js' %}?v=20260427-alertmail2"></script>
+{% endblock %}

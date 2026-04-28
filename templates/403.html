@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>403 无权限访问 | ITSM</title>
+    <link rel="stylesheet" href="{% static 'css/error403.css' %}?v=20260424-403-center1">
+</head>
+<body>
+<main class="page-403">
+    <section class="card-403">
+        <section class="main-403">
+            <div class="badge-403">Access Blocked</div>
+            <p class="code-403">403</p>
+            <h1 class="title-403">你已登录，但没有访问这个页面的权限</h1>
+            <p class="copy-403">
+                当前账号缺少访问此页面所需的权限，系统已拦截本次请求。
+                你可以返回上一页，或联系管理员为当前角色补充授权后再试。
+            </p>
+            <div class="actions-403">
+                <a class="btn-primary-403" href="{{ dashboard_url }}">{{ dashboard_label }}</a>
+                <a class="btn-secondary-403" href="{{ back_url }}">返回上一页</a>
+            </div>
+        </section>
+
+        <aside class="side-403">
+            <div class="visual-403" aria-hidden="true">
+                <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+                    <circle cx="100" cy="100" r="76" fill="rgba(15, 98, 214, 0.09)"></circle>
+                    <circle cx="100" cy="100" r="58" fill="rgba(15, 98, 214, 0.14)"></circle>
+                    <rect x="64" y="92" width="72" height="54" rx="18" fill="#0f62d6"></rect>
+                    <path d="M79 90V74c0-12.2 9.6-22 21-22s21 9.8 21 22v16" stroke="#15355d" stroke-width="10" stroke-linecap="round"></path>
+                    <circle cx="100" cy="116" r="7" fill="white"></circle>
+                    <rect x="96" y="122" width="8" height="13" rx="4" fill="white"></rect>
+                    <path d="M136 56l18-18" stroke="#c23b4f" stroke-width="8" stroke-linecap="round"></path>
+                    <path d="M154 56l-18-18" stroke="#c23b4f" stroke-width="8" stroke-linecap="round"></path>
+                </svg>
+                <div class="chip-403">权限校验已生效</div>
+            </div>
+
+            <div class="meta-403">
+                <div class="row-403">
+                    <span>请求路径</span>
+                    <code>{{ requested_path }}</code>
+                </div>
+                <div class="row-403">
+                    <span>访问身份</span>
+                    <strong>{% if request.user.is_authenticated %}{{ request.user.username }}{% else %}匿名用户{% endif %}</strong>
+                </div>
+                <div class="row-403">
+                    <span>追踪编号</span>
+                    <code>{{ trace_id|default:"-" }}</code>
+                </div>
+                {% if exception_message %}
+                    <div class="row-403">
+                        <span>说明</span>
+                        <strong>{{ exception_message }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+
+{% block content %}
+<section
+    class="surface-card surface-card-spacious subpage-panel-v2 bastion-panel-v2"
+    data-bastion-page
+    data-config-ready="{{ config_ready|yesno:'1,0' }}"
+    data-default-cloud-id="{{ default_cloud_id }}"
+    data-summary-url="{{ api_summary_url }}"
+    data-hosts-url="{{ api_hosts_url }}"
+    data-online-count-url="{{ api_online_count_url }}"
+    data-export-url="{{ api_export_url }}"
+    data-ping-url="{{ api_ping_url }}"
+    data-credentials-url-template="{{ api_credentials_url_template }}"
+    data-restart-url-template="{{ api_restart_url_template }}"
+    data-delete-url-template="{{ api_delete_url_template }}"
+    data-user-info-url-template="{{ api_user_info_url_template }}"
+    data-host-user-auth-url="{{ api_host_user_auth_url }}"
+    data-credential-password-url="{{ api_credential_password_url }}"
+>
+    <div class="bastion-head-v2">
+        <div>
+            <h3>{{ page_title }}</h3>
+        </div>
+        <div class="bastion-actions-v2">
+            <a class="secondary-button" href="{{ ssh_proxy_url }}" target="_blank" rel="noopener">免登录跳转</a>
+            <button id="bastion-ping-btn" class="secondary-button" type="button">连通性检测</button>
+            <button id="bastion-refresh-btn" class="primary-button" type="button">刷新清单</button>
+        </div>
+    </div>
+
+    {% if bootstrap_error %}
+        <div class="bastion-alert-v2 bastion-alert-warning-v2">{{ bootstrap_error }}</div>
+    {% endif %}
+    <div id="bastion-notice" class="bastion-alert-v2" hidden></div>
+
+    <div class="bastion-summary-v2 bastion-summary-grid-v2">
+        <article class="bastion-summary-card-v2">
+            <span>总主机数量</span>
+            <strong id="bastion-total-hosts">--</strong>
+        </article>
+        <article class="bastion-summary-card-v2">
+            <span>在线人数</span>
+            <strong id="bastion-online-users">{{ online_count|default:0 }}</strong>
+        </article>
+        <article class="bastion-summary-card-v2">
+            <span>用户总数</span>
+            <strong id="bastion-total-users">--</strong>
+        </article>
+        <article class="bastion-summary-card-v2">
+            <span>凭证数量</span>
+            <strong id="bastion-total-credentials">--</strong>
+        </article>
+    </div>
+
+    <section class="bastion-console-v2">
+        <div class="bastion-console-head-v2">系统控制面板</div>
+        <div class="bastion-console-grid-v2">
+            <article class="bastion-control-card-v2">
+                <h4>主机管理</h4>
+                <div class="bastion-control-row-v2">
+                    <button id="bastion-load-hosts-btn" class="secondary-button" type="button">查看主机</button>
+                    <a id="bastion-export-link" class="secondary-button" href="{{ api_export_url }}?cloud_id={{ default_cloud_id|urlencode }}">导出数据</a>
+                </div>
+                <label class="bastion-field-v2">
+                    <span>主机标识（Host ID / 主机名 / IP）</span>
+                    <input id="bastion-host-action-input" type="text" placeholder="输入主机标识">
+                </label>
+                <div class="bastion-control-row-v2">
+                    <button id="bastion-restart-by-input-btn" class="secondary-button bastion-warning-btn-v2" type="button">重启</button>
+                    <button id="bastion-delete-by-input-btn" class="danger-button" type="button">删除</button>
+                </div>
+            </article>
+
+            <article class="bastion-control-card-v2">
+                <h4>用户管理</h4>
+                <div class="bastion-control-row-v2">
+                    <input id="bastion-user-account-input" type="text" placeholder="输入用户账号">
+                    <button id="bastion-query-user-btn" class="primary-button" type="button">查询用户</button>
+                </div>
+                <div id="bastion-user-query-result" class="bastion-inline-result-v2">未查询用户</div>
+                <button id="bastion-add-auth-btn" class="primary-button primary-button-wide" type="button">添加授权</button>
+            </article>
+
+            <article class="bastion-control-card-v2">
+                <h4>凭证管理</h4>
+                <label class="bastion-field-v2">
+                    <span>主机标识（Host ID / 主机名 / IP）</span>
+                    <input id="bastion-password-host-input" type="text" placeholder="输入主机标识">
+                </label>
+                <label class="bastion-field-v2">
+                    <span>新密码</span>
+                    <input id="bastion-password-input" type="password" placeholder="输入新密码">
+                </label>
+                <button id="bastion-change-password-btn" class="primary-button primary-button-wide" type="button">修改密码</button>
+            </article>
+        </div>
+    </section>
+
+    <div class="bastion-toolbar-v2">
+        <label class="bastion-field-v2 bastion-field-search-v2">
+            <span>快速搜索</span>
+            <input id="bastion-search" type="search" placeholder="按主机名、IP、系统、描述、Host ID 过滤">
+        </label>
+        <button id="bastion-refresh-table-btn" class="secondary-button" type="button">刷新</button>
+    </div>
+
+    <div id="bastion-hosts-list-section" class="table-shell table-shell-v4 bastion-table-v2">
+        <table class="data-table data-table-v4list">
+            <thead>
+                <tr>
+                    <th>主机IP</th>
+                    <th>系统</th>
+                    <th>描述</th>
+                    <th>状态</th>
+                    <th>Host ID</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="bastion-table-body">
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-inline empty-inline-v4">正在加载堡垒机清单...</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<div class="confirm-modal bastion-modal-v2" id="bastion-credential-modal" hidden>
+    <div class="confirm-modal-backdrop" data-credential-close></div>
+    <section class="confirm-modal-card bastion-modal-card-v2" aria-modal="true" role="dialog" aria-labelledby="credential-modal-title">
+        <h3 id="credential-modal-title">凭据详情</h3>
+        <p>以下为 JumpServer 返回内容（敏感字段建议二次确认后使用）。</p>
+        <pre id="bastion-credential-content" class="bastion-pre-v2">{}</pre>
+        <div class="confirm-modal-actions">
+            <button id="bastion-credential-close-btn" class="secondary-button" type="button">关闭</button>
+        </div>
+    </section>
+</div>
+
+<div class="confirm-modal bastion-modal-v2" id="bastion-auth-modal" hidden>
+    <div class="confirm-modal-backdrop" data-auth-close></div>
+    <section class="confirm-modal-card bastion-auth-modal-card-v2" aria-modal="true" role="dialog" aria-labelledby="auth-modal-title">
+        <div class="bastion-auth-head-v2">
+            <h3 id="auth-modal-title">添加用户授权</h3>
+            <button id="bastion-auth-close-btn" class="bastion-auth-close-v2" type="button" aria-label="关闭">×</button>
+        </div>
+        <div class="bastion-auth-form-v2">
+            <label class="bastion-field-v2">
+                <span>主机IP地址</span>
+                <input id="bastion-auth-host-input" type="text" placeholder="请输入主机IP">
+            </label>
+            <div id="bastion-auth-host-id-tip" class="bastion-auth-id-tip-v2">主机ID：--</div>
+            <label class="bastion-field-v2">
+                <span>用户账户</span>
+                <input id="bastion-auth-account-input" type="text" placeholder="请输入账户">
+            </label>
+            <div id="bastion-auth-user-id-tip" class="bastion-auth-id-tip-v2">用户ID：--</div>
+        </div>
+        <div class="confirm-modal-actions bastion-auth-actions-v2">
+            <button id="bastion-auth-submit-btn" class="primary-button primary-button-wide" type="button">确认授权</button>
+        </div>
+    </section>
+</div>
+
+<script src="{% static 'js/cloudops_bastion.js' %}"></script>
+{% endblock %}

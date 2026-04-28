@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<section class="surface-card surface-card-spacious subpage-panel-v2 list-panel-v4 list-panel-v4-modulecards">
+    <div class="list-panel-head-v4">
+        <div>
+            <h3>{{ page_title }}</h3>
+            <p class="list-panel-sub-v4">共 {{ page_obj.paginator.count|default:0 }} 条记录，当前第 {{ page_obj.number|default:1 }} 页，每页 {{ current_per_page }} 条。</p>
+        </div>
+        <div class="list-toolbar-v4">
+            <form class="list-search-v4" method="get" data-auto-reset-search>
+                <label class="sr-only" for="module-list-search">搜索</label>
+                <input id="module-list-search" type="search" name="q" placeholder="按模块名称、代码、产品代码搜索" value="{{ query }}" data-auto-reset-input>
+                <button class="secondary-button" type="submit">筛选</button>
+            </form>
+            {% if create_url %}
+                <a class="primary-button" href="{{ create_url }}">新增记录</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="module-card-grid">
+        {% for obj in object_list %}
+            <article class="module-data-card">
+                <header class="module-data-card-head">
+                    {% if perms.bsecp.change_module %}
+                        <a class="module-data-title-link" href="{% url 'bsecp:module-edit' obj.pk %}">{{ obj.md_name|default:"-" }}</a>
+                    {% else %}
+                        <h4>{{ obj.md_name|default:"-" }}</h4>
+                    {% endif %}
+                </header>
+                <div class="module-data-grid">
+                    <div class="module-data-item">
+                        <span>模块代码</span>
+                        <strong class="module-data-value module-data-value-code">{{ obj.md_code|default:"-" }}</strong>
+                    </div>
+                    <div class="module-data-item">
+                        <span>产品代码</span>
+                        <strong class="module-data-value module-data-value-code">{{ obj.md_productcode|default:obj.md_productid|default:"-" }}</strong>
+                    </div>
+                    <div class="module-data-item">
+                        <span>产品名称</span>
+                        <strong class="module-data-value module-data-value-note">{{ obj.md_remark|default:"-" }}</strong>
+                    </div>
+                    <div class="module-data-item">
+                        <span>创建时间</span>
+                        <strong class="module-data-value module-data-value-time">{{ obj.md_create_date_display }}</strong>
+                    </div>
+                </div>
+            </article>
+        {% empty %}
+            <div class="empty-inline empty-inline-v4 module-empty-inline">
+                <strong>暂无数据</strong>
+                <span>当前没有符合条件的 Module 记录。</span>
+            </div>
+        {% endfor %}
+        {% if module_placeholder_count %}
+            {% for _ in ""|ljust:module_placeholder_count %}
+                <article class="module-data-card module-data-card-placeholder" aria-hidden="true"></article>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if is_paginated %}
+        <nav class="list-pagination-v4" aria-label="分页导航">
+            <div class="pagination-summary-v4">
+                <form class="pagination-size-v4" method="get">
+                    <input type="hidden" name="q" value="{{ query }}">
+                    <label for="module-list-per-page-bottom">每页</label>
+                    <select id="module-list-per-page-bottom" name="per_page" data-auto-submit-select>
+                        {% for option in paginate_by_options %}
+                            <option value="{{ option }}" {% if option == current_per_page %}selected{% endif %}>{{ option }} 条/页</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="page" value="1">
+                </form>
+                <div class="pagination-meta-v4">
+                    第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                </div>
+            </div>
+            <div class="pagination-actions-v4">
+                {% if page_obj.has_previous %}
+                    <a class="secondary-button" href="?q={{ query|urlencode }}&per_page={{ current_per_page }}&page=1">首页</a>
+                    <a class="secondary-button" href="?q={{ query|urlencode }}&per_page={{ current_per_page }}&page={{ page_obj.previous_page_number }}">上一页</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="secondary-button" href="?q={{ query|urlencode }}&per_page={{ current_per_page }}&page={{ page_obj.next_page_number }}">下一页</a>
+                    <a class="secondary-button" href="?q={{ query|urlencode }}&per_page={{ current_per_page }}&page={{ page_obj.paginator.num_pages }}">末页</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

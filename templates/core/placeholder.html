@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}{{ description }}{% endblock %}
+
+{% block content %}
+<section class="surface-card subpage-panel-v2 spotlight-card">
+    <span class="eyebrow-label">Planned Capability</span>
+    <h2>{{ page_title }}</h2>
+    <p>{{ description }}</p>
+    <div class="feature-ribbon">
+        <span>骨架已就绪</span>
+        <span>权限入口已预留</span>
+        <span>可继续接入外部系统</span>
+    </div>
+</section>
+{% endblock %}

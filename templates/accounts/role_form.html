@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}按模块分配权限，支持搜索和批量勾选，提升角色配置效率。{% endblock %}
+
+{% block content %}
+<section class="role-form-layout-v2">
+    <article class="surface-card surface-card-spacious subpage-panel-v2 role-editor-card-v2">
+        <div class="section-head role-editor-head-v2">
+            <div>
+                <span class="eyebrow-label">Role Workspace</span>
+                <h3>{{ page_title }}</h3>
+                <p class="role-editor-sub-v2">先填写角色基础信息，再按模块选择权限。</p>
+            </div>
+            <div class="role-editor-metrics-v2">
+                <div class="role-metric-v2">
+                    <span>已选权限</span>
+                    <strong data-role-permission-selected-count>{{ permission_selected_count|default:0 }}</strong>
+                </div>
+                <div class="role-metric-v2">
+                    <span>可见权限</span>
+                    <strong data-role-permission-visible-count>{{ permission_total_count|default:0 }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="editor-form role-editor-form-v2" novalidate data-submit-label="{{ submit_label|default:'提交' }}" data-delete-confirm="{{ delete_confirm_text|default:'确认删除这条记录吗？' }}">
+            {% csrf_token %}
+            {% if next_url %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+            {% endif %}
+
+            <div class="role-basic-grid-v2">
+                <div class="field {% if form.name.errors %}has-error{% endif %}">
+                    <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.help_text %}
+                        <small class="field-hint">{{ form.name.help_text }}</small>
+                    {% endif %}
+                    {% if form.name.errors %}
+                        <small class="field-error">{{ form.name.errors|striptags }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="field {% if form.description.errors %}has-error{% endif %}">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.help_text %}
+                        <small class="field-hint">{{ form.description.help_text }}</small>
+                    {% endif %}
+                    {% if form.description.errors %}
+                        <small class="field-error">{{ form.description.errors|striptags }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="field {% if form.data_scope.errors %}has-error{% endif %}">
+                    <label for="{{ form.data_scope.id_for_label }}">{{ form.data_scope.label }}</label>
+                    {{ form.data_scope }}
+                    {% if form.data_scope.help_text %}
+                        <small class="field-hint">{{ form.data_scope.help_text }}</small>
+                    {% endif %}
+                    {% if form.data_scope.errors %}
+                        <small class="field-error">{{ form.data_scope.errors|striptags }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <section class="role-permission-panel-v2 {% if form.permissions.errors %}has-error{% endif %}">
+                <div class="role-permission-head-v2">
+                    <h4>{{ form.permissions.label }}</h4>
+                    <p>可按模块过滤，支持对当前可见结果一键全选或清空。</p>
+                </div>
+
+                <div class="role-permission-toolbar-v2">
+                    <div class="role-permission-search-v2">
+                        <span>搜索权限</span>
+                        <input type="search" id="role-permission-search-v2" placeholder="输入模块、资源或动作关键词">
+                    </div>
+                    <div class="role-permission-actions-v2">
+                        <button type="button" class="secondary-button" data-role-perm-action="select-visible">全选可见</button>
+                        <button type="button" class="secondary-button" data-role-perm-action="clear-visible">清空可见</button>
+                    </div>
+                </div>
+
+                <div class="role-permission-groups-v2" id="role-permission-groups-v2">
+                    {% for group in permission_groups %}
+                        <section class="role-perm-group-v2" data-role-perm-group>
+                            <div class="role-perm-group-head-v2">
+                                <h5>{{ group.name }}</h5>
+                                <span class="role-perm-group-badge-v2" data-group-selected-count>{{ group.selected_count }}/{{ group.total_count }}</span>
+                                <div class="role-perm-group-actions-v2">
+                                    <button type="button" class="secondary-button" data-role-group-action="select">全选</button>
+                                    <button type="button" class="secondary-button" data-role-group-action="clear">清空</button>
+                                </div>
+                            </div>
+                            <div class="role-perm-group-body-v2">
+                                {% for item in group.items %}
+                                    <label class="role-perm-item-v2" data-role-perm-item data-perm-search="{{ item.search_text }}">
+                                        <input
+                                            type="checkbox"
+                                            name="{{ form.permissions.html_name }}"
+                                            value="{{ item.id }}"
+                                            {% if item.selected %}checked{% endif %}
+                                            data-role-perm-checkbox
+                                        >
+                                        <div class="role-perm-copy-v2">
+                                            <strong>{{ item.resource }}</strong>
+                                            <span>{{ item.action }}</span>
+                                        </div>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </section>
+                    {% empty %}
+                        <div class="role-perm-empty-v2">当前没有可分配的权限。</div>
+                    {% endfor %}
+                </div>
+
+                {% if form.permissions.help_text %}
+                    <small class="field-hint">{{ form.permissions.help_text }}</small>
+                {% endif %}
+                {% if form.permissions.errors %}
+                    <small class="field-error">{{ form.permissions.errors|striptags }}</small>
+                {% endif %}
+            </section>
+
+            <div class="editor-actions">
+                <a class="secondary-button" href="{{ request.META.HTTP_REFERER|default:request.path }}">返回</a>
+                <button class="primary-button js-action-trigger" type="button" data-action="submit" data-label="{{ submit_label|default:'提交' }}">{{ submit_label }}</button>
+            </div>
+        </form>
+    </article>
+
+    <aside class="surface-card role-aside-v2">
+        <span class="eyebrow-label">Role Tips</span>
+        <h3>配置建议</h3>
+        <div class="stack-list">
+            <div class="stack-row">
+                <span>最小权限原则</span>
+                <strong>按职责授权</strong>
+            </div>
+            <div class="stack-row">
+                <span>优先过滤模块</span>
+                <strong>降低误选风险</strong>
+            </div>
+            <div class="stack-row">
+                <span>变更可追溯</span>
+                <strong>审计日志记录</strong>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<div class="confirm-modal" id="action-confirm-modal" hidden>
+    <div class="confirm-modal-backdrop" data-modal-close></div>
+    <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message">
+        <span class="eyebrow-label">Operation Confirm</span>
+        <h3 id="confirm-modal-title">确认操作</h3>
+        <p id="confirm-modal-message">确认执行此操作吗？</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="secondary-button" id="confirm-modal-cancel">取消</button>
+            <button type="button" class="primary-button" id="confirm-modal-confirm">确认</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

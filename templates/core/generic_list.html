@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+{% if summary_cards %}
+<section class="summary-strip-v4{% if panel_css_class == 'list-panel-v4-authq' %} summary-strip-v4-portmaplike{% endif %}" aria-label="页面统计">
+    {% for card in summary_cards %}
+        <article class="summary-tile-v4 {{ card.accent_class }}{% if card.is_active %} is-active{% endif %}{% if card.filter_url %} is-clickable{% endif %}">
+            <div class="summary-icon-v4" aria-hidden="true">
+                {% if card.icon == "success" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M8.5 12.5l2.2 2.2 4.8-5.2"></path></svg>
+                {% elif card.icon == "warning" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5"></path><circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none"></circle></svg>
+                {% elif card.icon == "globe" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>
+                {% elif card.icon == "stack" %}
+                    <svg viewBox="0 0 24 24"><path d="M12 3l8 4-8 4-8-4 8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 17l8 4 8-4"></path></svg>
+                {% else %}
+                    <svg viewBox="0 0 24 24"><path d="M12 5v4"></path><path d="M5 19v-4"></path><path d="M19 19v-4"></path><circle cx="12" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle><path d="M12 9v2"></path><path d="M12 11H5"></path><path d="M12 11h7"></path><path d="M5 11v6"></path><path d="M19 11v6"></path></svg>
+                {% endif %}
+            </div>
+            {% if card.badges %}
+                <div class="summary-platform-v4">
+                    <span class="summary-platform-title-v4">{{ card.label }}</span>
+                    <div class="summary-platform-grid-v4">
+                        {% for badge in card.badges %}
+                            <div class="summary-platform-chip-v4">
+                                <span>{{ badge.label }}</span>
+                                <strong>{{ badge.value }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="summary-copy-v4">
+                    <strong>{{ card.value }}</strong>
+                    <span>{{ card.label }}</span>
+                </div>
+            {% endif %}
+            {% if card.filter_url %}
+                <a class="summary-card-link-v4" href="{{ card.filter_url }}" aria-label="筛选 {{ card.label }}"></a>
+            {% endif %}
+        </article>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="surface-card surface-card-spacious subpage-panel-v2 list-panel-v4{% if panel_css_class %} {{ panel_css_class }}{% endif %}">
+    <div class="list-panel-head-v4">
+        <div>
+            <h3>{{ page_title }}</h3>
+            <p class="list-panel-sub-v4">共 {{ page_obj.paginator.count|default:0 }} 条记录，当前第 {{ page_obj.number|default:1 }} 页，每页 {{ current_per_page }} 条。</p>
+        </div>
+        <div class="list-toolbar-v4">
+            <form class="list-search-v4" method="get" data-auto-reset-search>
+                {% for key, value in search_hidden_pairs %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endfor %}
+                <label class="sr-only" for="list-search">搜索</label>
+                <input id="list-search" type="search" name="q" placeholder="输入关键字搜索" value="{{ query }}" data-auto-reset-input>
+                <button class="secondary-button" type="submit">筛选</button>
+            </form>
+            {% if sync_url %}
+                <a class="secondary-button" href="{{ sync_url }}">{{ sync_label|default:"手动同步" }}</a>
+            {% endif %}
+            {% if create_url %}
+                <a class="primary-button" href="{{ create_url }}">新增记录</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-shell table-shell-v4">
+        <table class="data-table data-table-v4list">
+            <thead>
+                <tr>
+                    {% for column in columns %}
+                        <th>{{ column }}</th>
+                    {% endfor %}
+                    {% if show_actions %}
+                        <th>操作</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        {% for cell in row.cells %}
+                            <td class="cell-v4 cell-v4-{{ cell.accessor }}">
+                                {% if cell.tone %}
+                                    <span class="result-badge-v4 result-badge-v4-{{ cell.tone }}">{{ cell.value|default:"-" }}</span>
+                                {% else %}
+                                    {{ cell.value|default:"-" }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                        {% if show_actions %}
+                            <td class="table-action-v4">
+                                {% if row.edit_url %}
+                                    <a class="text-link" href="{{ row.edit_url }}">编辑详情</a>
+                                {% else %}
+                                    <span class="table-muted">仅查看</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="{{ empty_colspan }}">
+                            <div class="empty-inline empty-inline-v4">
+                                <strong>暂无数据</strong>
+                                {% if create_url %}
+                                    <span>可通过上方“新增记录”创建第一条数据。</span>
+                                {% else %}
+                                    <span>当前页面仅支持查看数据库数据。</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+        <nav class="list-pagination-v4" aria-label="分页导航">
+            <div class="pagination-summary-v4">
+                <form class="pagination-size-v4" method="get">
+                    {% for key, value in per_page_hidden_pairs %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endfor %}
+                    <label for="list-per-page-bottom">每页</label>
+                    <select id="list-per-page-bottom" name="per_page" data-auto-submit-select>
+                        {% for option in paginate_by_options %}
+                            <option value="{{ option }}" {% if option == current_per_page %}selected{% endif %}>{{ option }} 条/页</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="page" value="1">
+                </form>
+                <div class="pagination-meta-v4">
+                    第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                </div>
+            </div>
+            <div class="pagination-actions-v4">
+                {% if page_obj.has_previous %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page=1">首页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.previous_page_number }}">上一页</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.next_page_number }}">下一页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">末页</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,172 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="zh-Hans" class="app-root-v2">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ITSM 平台{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20260427-logselectclip1">
+</head>
+<body class="app-body-v2">
+<div class="app-shell app-shell-v2">
+    <div class="app-backdrop" data-sidebar-dismiss></div>
+
+    <aside class="app-sidebar app-sidebar-v2">
+        <div class="sidebar-brand-v2">
+            <div class="sidebar-brand-row-v2">
+                <a class="brand-link-v2" href="{% url 'core:dashboard' %}">
+                    <img class="brand-mark-v2 brand-logo-v2" src="{% static 'images/title1.png' %}" alt="BAISON ITSM logo">
+                    <div class="brand-text-v2">
+                        <strong>BAISON ITSM</strong>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav-v2">
+            {% for item in navigation_items %}
+                {% if item.children %}
+                    <section class="nav-group nav-group-v2" data-nav-group>
+                        <button class="nav-group-trigger nav-group-trigger-v2" type="button" data-nav-trigger>
+                            <span class="nav-group-main-v2">
+                                <span class="nav-icon-v2" aria-hidden="true">
+                                    {% if item.label == "映射管理" %}
+                                        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle><path d="M12 7v4"></path><path d="M12 11H5v6"></path><path d="M12 11h7v6"></path></svg>
+                                    {% elif item.label == "资产管理" %}
+                                        <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="9" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="11" cy="18" r="2"></circle></svg>
+                                    {% elif item.label == "BSECP" %}
+                                        <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.4 8.1-7 10-3.6-1.9-7-5-7-10V6l7-3z"></path><path d="M9.5 12l1.8 1.8 3.3-3.3"></path></svg>
+                                    {% elif item.label == "行云管家" %}
+                                        <svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6.2 8.5 4 4 0 0 0 7 18z"></path></svg>
+                                    {% elif item.label == "运维监控" %}
+                                        <svg viewBox="0 0 24 24"><path d="M3 12h4l2-4 3 8 2-4h7"></path><path d="M3 5h18"></path><path d="M3 19h18"></path></svg>
+                                    {% elif item.label == "系统管理" %}
+                                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V22a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H2a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V2a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H22a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"></circle></svg>
+                                    {% endif %}
+                                </span>
+                                <span>{{ item.label }}</span>
+                            </span>
+                            <span class="nav-chevron nav-chevron-v2"></span>
+                        </button>
+                        <div class="nav-group-body nav-group-body-v2">
+                            {% for child in item.children %}
+                                <a
+                                    class="nav-link nav-link-v2 {% if child.is_active %}is-active{% endif %}"
+                                    href="{% url child.url %}"
+                                    {% if child.url == "cloudops:ssh-proxy" %}target="_blank" rel="noopener noreferrer"{% endif %}
+                                >
+                                    <span class="nav-link-main-v2">
+                                        <span class="nav-icon-v2" aria-hidden="true">
+                                            {% if child.url == "mappings:port-list" %}
+                                                <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"></rect><circle cx="8" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="16" cy="12" r="1"></circle><path d="M7 4h10"></path></svg>
+                                            {% elif child.url == "mappings:domain-list" %}
+                                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>
+                                            {% elif child.url == "assets:vm-list" %}
+                                                <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path></svg>
+                                            {% elif child.url == "assets:host-list" %}
+                                                <svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"></rect><path d="M3 10h2M3 14h2M19 10h2M19 14h2M10 3v2M14 3v2M10 19v2M14 19v2"></path></svg>
+                                            {% elif child.url == "assets:namespace-list" %}
+                                                <svg viewBox="0 0 24 24"><path d="M12 3l8 4-8 4-8-4 8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 17l8 4 8-4"></path></svg>
+                                            {% elif child.url == "assets:qualification-list" %}
+                                                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M8 9h8"></path><path d="M8 13h8"></path><path d="M8 17h5"></path></svg>
+                                            {% elif child.url == "bsecp:module-list" %}
+                                                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg>
+                                            {% elif child.url == "bsecp:authorization-list" %}
+                                                <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"></circle><path d="M21 21l-5.2-5.2"></path></svg>
+                                            {% elif child.url == "bsecp:authorization-detail" %}
+                                                <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"></circle><path d="M21 21l-5.2-5.2"></path></svg>
+                                            {% elif child.url == "cloudops:bastion-list" %}
+                                                <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></svg>
+                                            {% elif child.url == "cloudops:ssh-proxy" %}
+                                                <svg viewBox="0 0 24 24"><path d="M7 12l3 3 7-7"></path><rect x="3" y="4" width="18" height="16" rx="2"></rect></svg>
+                                            {% elif child.url == "monitoring:target-list" or child.url == "monitoring:host-resource-dashboard" or child.url == "monitoring:k8s-resource-dashboard" %}
+                                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M7 20h10"></path><path d="M12 16v4"></path></svg>
+                                            {% elif child.url == "monitoring:task-list" %}
+                                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5l3 2"></path></svg>
+                                            {% elif child.url == "accounts:user-list" %}
+                                                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3.5 19a6 6 0 0 1 11 0"></path><path d="M14 19a4.2 4.2 0 0 1 6.5 0"></path></svg>
+                                            {% elif child.url == "accounts:role-list" %}
+                                                <svg viewBox="0 0 24 24"><path d="M12 3l7 4v5c0 4.5-2.8 7.2-7 9-4.2-1.8-7-4.5-7-9V7l7-4z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                                            {% elif child.url == "logs:dashboard" %}
+                                                <svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg>
+                                            {% else %}
+                                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg>
+                                            {% endif %}
+                                        </span>
+                                        <span>{{ child.label }}</span>
+                                    </span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% else %}
+                    <a class="nav-link nav-link-v2 nav-link-root-v2 {% if item.is_active %}is-active{% endif %}" href="{% url item.url %}">
+                        <span class="nav-link-main-v2">
+                            <span class="nav-icon-v2" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M3 12l9-7 9 7"></path><path d="M6 10v10h12V10"></path></svg>
+                            </span>
+                            <span>{{ item.label }}</span>
+                        </span>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+
+        <div class="sidebar-footer-v2">
+            <div class="sidebar-status-v2">
+                <div class="sidebar-status-head-v2">
+                    <span>位置信息</span>
+                    <div class="user-card-v2 user-card-sidebar-v2" data-user-menu>
+                        <button class="user-trigger-v2" type="button" data-user-menu-trigger aria-expanded="false">
+                            <span class="user-name-v2">{{ request.user.username }}</span>
+                            <span class="user-chevron-v2" aria-hidden="true"></span>
+                        </button>
+                        <div class="user-menu-panel-v2" hidden data-user-menu-panel>
+                            <a class="user-menu-item-v2" href="{% url 'accounts:password-change' %}?next={{ request.get_full_path|urlencode }}">修改密码</a>
+                            <form method="post" action="{% url 'accounts:logout' %}" class="user-logout-form-v2">
+                                {% csrf_token %}
+                                <button class="user-menu-item-v2 user-menu-button-v2" type="submit">退出</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <strong>{{ sidebar_current_node }}</strong>
+                <span>当前访问 IP</span>
+                <code class="sidebar-trace-v2">内网 IP: {{ sidebar_private_ip }}</code>
+                <code class="sidebar-trace-v2">公网出口 IP: {{ sidebar_public_ip }}</code>
+                <span>安全基线</span>
+                <code class="sidebar-trace-v2">CSRF / CSP / 审计已启用</code>
+                <span>追踪 ID</span>
+                <code class="sidebar-trace-v2">{{ request.trace_id|default:"在线" }}</code>
+            </div>
+        </div>
+    </aside>
+
+    <main class="app-main app-main-v2">
+        <header class="app-header app-header-v2">
+            <div class="header-main-v2">
+                <button class="sidebar-toggle sidebar-toggle-v2" type="button" data-sidebar-toggle aria-label="打开导航">
+                    <span class="sidebar-toggle-icon-v2"></span>
+                    <span class="sidebar-toggle-text-v2">打开导航</span>
+                </button>
+            </div>
+
+            <div class="header-meta-v2"></div>
+        </header>
+
+        {% if messages %}
+            <section class="toast-stack">
+                {% for message in messages %}
+                    <div class="toast toast-{{ message.tags|default:'info' }}">{{ message }}</div>
+                {% endfor %}
+            </section>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+<script src="{% static 'js/app.js' %}?v=20260424-bsecpdash1"></script>
+</body>
+</html>

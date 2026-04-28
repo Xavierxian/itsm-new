@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}填写关键信息后保存，所有变更都会进入审计与留痕链路。{% endblock %}
+
+{% block content %}
+<section class="form-layout">
+    <article class="surface-card surface-card-spacious subpage-panel-v2">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow-label">Edit Workspace</span>
+                <h3>{{ page_title }}</h3>
+            </div>
+        </div>
+        <form method="post" class="editor-form" novalidate data-submit-label="{{ submit_label|default:'提交' }}" data-delete-confirm="{{ delete_confirm_text|default:'确认删除这条记录吗？' }}">
+            {% csrf_token %}
+            {% if next_url %}
+                <input type="hidden" name="next" value="{{ next_url }}">
+            {% endif %}
+            <div class="editor-grid">
+                {% for field in form %}
+                    <div class="field {% if field.errors %}has-error{% endif %}{% if field.field.widget.input_type == 'checkbox' %} field-checkbox{% endif %}{% if field.field.widget.allow_multiple_selected %} field-multiselect{% endif %}">
+                        {% if field.field.widget.input_type == "checkbox" %}
+                            <label class="checkbox-row" for="{{ field.id_for_label }}">
+                                {{ field }}
+                                <span>{{ field.label }}</span>
+                            </label>
+                        {% else %}
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}
+                            <small class="field-hint">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            <small class="field-error">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="editor-actions">
+                <a class="secondary-button" href="{{ request.META.HTTP_REFERER|default:request.path }}">返回</a>
+                {% if submit_after_delete %}
+                    {% if show_delete_button %}
+                        <button class="danger-button js-action-trigger" type="button" data-action="delete" data-label="{{ delete_label|default:'删除' }}">
+                            {{ delete_label|default:"删除" }}
+                        </button>
+                    {% endif %}
+                    <button class="primary-button js-action-trigger" type="button" data-action="submit" data-label="{{ submit_label|default:'更新' }}">{{ submit_label|default:'更新' }}</button>
+                {% else %}
+                    <button class="primary-button js-action-trigger" type="button" data-action="submit" data-label="{{ submit_label|default:'更新' }}">{{ submit_label|default:'更新' }}</button>
+                    {% if show_delete_button %}
+                        <button class="danger-button js-action-trigger" type="button" data-action="delete" data-label="{{ delete_label|default:'删除' }}">
+                            {{ delete_label|default:"删除" }}
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </form>
+    </article>
+
+    <aside class="surface-card form-aside">
+        <span class="eyebrow-label">Audit Notice</span>
+        <h3>本次操作会被记录</h3>
+        <div class="stack-list">
+            <div class="stack-row">
+                <span>记录对象</span>
+                <strong>{{ page_title }}</strong>
+            </div>
+            <div class="stack-row">
+                <span>写入内容</span>
+                <strong>操作审计 + 资源变更</strong>
+            </div>
+            <div class="stack-row">
+                <span>安全策略</span>
+                <strong>CSRF / Session / 权限校验</strong>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<div class="confirm-modal" id="action-confirm-modal" hidden>
+    <div class="confirm-modal-backdrop" data-modal-close></div>
+    <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message">
+        <span class="eyebrow-label">Operation Confirm</span>
+        <h3 id="confirm-modal-title">确认操作</h3>
+        <p id="confirm-modal-message">确认执行此操作吗？</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="secondary-button" id="confirm-modal-cancel">取消</button>
+            <button type="button" class="primary-button" id="confirm-modal-confirm">确认</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

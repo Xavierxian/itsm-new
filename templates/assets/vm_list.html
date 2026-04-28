@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+{% if summary_cards %}
+<section class="summary-strip-v4 summary-strip-v4-portmaplike" aria-label="页面统计">
+    {% for card in summary_cards %}
+        <article class="summary-tile-v4 {{ card.accent_class }}{% if card.is_active %} is-active{% endif %}{% if card.filter_url %} is-clickable{% endif %}">
+            <div class="summary-icon-v4" aria-hidden="true">
+                {% if card.icon == "success" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M8.5 12.5l2.2 2.2 4.8-5.2"></path></svg>
+                {% elif card.icon == "warning" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v5"></path><circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none"></circle></svg>
+                {% elif card.icon == "os-windows" %}
+                    <svg viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="7.5" height="7.5" rx="0.8" fill="currentColor" stroke="none"></rect>
+                        <rect x="12.5" y="4" width="7.5" height="7.5" rx="0.8" fill="currentColor" stroke="none"></rect>
+                        <rect x="4" y="12.5" width="7.5" height="7.5" rx="0.8" fill="currentColor" stroke="none"></rect>
+                        <rect x="12.5" y="12.5" width="7.5" height="7.5" rx="0.8" fill="currentColor" stroke="none"></rect>
+                    </svg>
+                {% elif card.icon == "os-penguin" %}
+                    <svg viewBox="0 0 24 24" style="fill: initial; stroke: none; stroke-width: 0;">
+                        <rect x="2.2" y="2.2" width="7.8" height="7.8" fill="#8cc63e"></rect>
+                        <rect x="14" y="2.2" width="7.8" height="7.8" fill="#8e2b8a"></rect>
+                        <rect x="2.2" y="14" width="7.8" height="7.8" fill="#3e4095"></rect>
+                        <rect x="14" y="14" width="7.8" height="7.8" fill="#f3b31b"></rect>
+                        <polygon points="10,0 14,0 14,10 24,10 24,14 14,14 14,24 10,24 10,14 0,14 0,10 10,10" fill="#d8e6f4"></polygon>
+                        <polygon points="9,0 15,0 12,3.4" fill="#f3b31b"></polygon>
+                        <polygon points="24,9 24,15 20.6,12" fill="#2a2f86"></polygon>
+                        <polygon points="9,24 15,24 12,20.6" fill="#f3b31b"></polygon>
+                        <polygon points="0,9 0,15 3.4,12" fill="#8e2b8a"></polygon>
+                        <circle cx="12" cy="12" r="1.45" fill="#c9dced"></circle>
+                        <path d="M4.2 6.8l2.2-2.2 2.2 2.2M6.4 4.6v3.4" stroke="#ffffff" stroke-width="1.1" fill="none"></path>
+                        <path d="M17.2 4.6l2.2 2.2-2.2 2.2M17.2 6.8h3.4" stroke="#ffffff" stroke-width="1.1" fill="none"></path>
+                        <path d="M8.6 17.2l-2.2 2.2-2.2-2.2M6.4 19.4V16" stroke="#ffffff" stroke-width="1.1" fill="none"></path>
+                        <path d="M15.4 19.4l2.2-2.2 2.2 2.2M17.6 16v3.4" stroke="#ffffff" stroke-width="1.1" fill="none"></path>
+                    </svg>
+                {% elif card.icon == "os-ubuntu" %}
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9" fill="#e95420" stroke="none"></circle>
+                        <circle cx="12" cy="12" r="3.4" fill="#ffffff" stroke="none"></circle>
+                        <circle cx="12" cy="4.7" r="1.5" fill="#ffffff" stroke="none"></circle>
+                        <circle cx="5.7" cy="15.5" r="1.5" fill="#ffffff" stroke="none"></circle>
+                        <circle cx="18.3" cy="15.5" r="1.5" fill="#ffffff" stroke="none"></circle>
+                        <path d="M12 6.8l0 1.8M7.4 14.2l1.5-.9M16.6 14.2l-1.5-.9" stroke="#ffffff" fill="none"></path>
+                    </svg>
+                {% elif card.icon == "globe" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a14 14 0 0 1 0 18"></path><path d="M12 3a14 14 0 0 0 0 18"></path></svg>
+                {% elif card.icon == "stack" %}
+                    <svg viewBox="0 0 24 24"><path d="M12 3l8 4-8 4-8-4 8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 17l8 4 8-4"></path></svg>
+                {% else %}
+                    <svg viewBox="0 0 24 24"><path d="M12 5v4"></path><path d="M5 19v-4"></path><path d="M19 19v-4"></path><circle cx="12" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><circle cx="19" cy="19" r="2"></circle><path d="M12 9v2"></path><path d="M12 11H5"></path><path d="M12 11h7"></path><path d="M5 11v6"></path><path d="M19 11v6"></path></svg>
+                {% endif %}
+            </div>
+            <div class="summary-copy-v4">
+                <strong>{{ card.value }}</strong>
+                <span>{{ card.label }}</span>
+            </div>
+            {% if card.filter_url %}
+                <a class="summary-card-link-v4" href="{{ card.filter_url }}" aria-label="筛选 {{ card.label }}"></a>
+            {% endif %}
+        </article>
+    {% endfor %}
+</section>
+{% endif %}
+
+<section class="surface-card surface-card-spacious subpage-panel-v2 list-panel-v4 list-panel-v4-assetsvmcards">
+    <div class="list-panel-head-v4">
+        <div>
+            <h3>{{ page_title }}</h3>
+            <p class="list-panel-sub-v4">共 {{ page_obj.paginator.count|default:0 }} 条记录，当前第 {{ page_obj.number|default:1 }} 页，每页 {{ current_per_page }} 条。</p>
+        </div>
+        <div class="list-toolbar-v4">
+            <form class="list-search-v4" method="get" data-auto-reset-search>
+                {% for key, value in search_hidden_pairs %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endfor %}
+                <label class="sr-only" for="vm-list-search">搜索</label>
+                <input id="vm-list-search" type="search" name="q" placeholder="按IP、系统、申请人、用途搜索" value="{{ query }}" data-auto-reset-input>
+                <button class="secondary-button" type="submit">筛选</button>
+            </form>
+            {% if create_url %}
+                <a class="primary-button" href="{{ create_url }}">新增记录</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="vm-card-scroll">
+        <div class="vm-card-list">
+            {% for obj in object_list %}
+                <article class="vm-card-row">
+                    <section class="vm-main-card">
+                        <strong class="vm-main-ip">{{ obj.vm_ip|default:"-" }}</strong>
+                        <span class="vm-main-host">{{ obj.host_ip|default:"-" }}</span>
+                        <div class="vm-state-row">
+                            <span class="vm-env-pill">{{ obj.environment_label|default:"-" }}</span>
+                            <span class="vm-status-pill vm-status-{{ obj.in_use_tone }}">{{ obj.in_use_label }}</span>
+                        </div>
+                    </section>
+
+                    <section class="vm-info-card">
+                        <span>操作系统</span>
+                        <strong>{{ obj.os_summary|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-info-card">
+                        <span>CPU/内存/硬盘</span>
+                        <strong>{{ obj.spec_compact|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-info-card vm-info-card-xs">
+                        <span>远程端口</span>
+                        <strong>{{ obj.remote_port|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-info-card vm-info-card-xs">
+                        <span>开机密码</span>
+                        <div class="vm-copy-wrap">
+                            {% if obj.boot_password %}
+                                <button
+                                    class="secondary-button vm-copy-btn"
+                                    type="button"
+                                    data-copy-text="{{ obj.boot_password }}"
+                                    data-copy-label-default="复制密码"
+                                    data-copy-label-success="已复制"
+                                >
+                                    复制密码
+                                </button>
+                            {% else %}
+                                <span class="table-muted">无</span>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <section class="vm-info-card vm-info-card-xs">
+                        <span>申请人</span>
+                        <strong>{{ obj.applicant|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-info-card vm-info-card-lg">
+                        <span>用途</span>
+                        <strong>{{ obj.purpose|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-info-card vm-info-card-lg">
+                        <span>开通/结束日期</span>
+                        <strong>{{ obj.open_date|date:"Y-m-d"|default:"-" }} ~ {{ obj.end_date|date:"Y-m-d"|default:"-" }}</strong>
+                    </section>
+
+                    <section class="vm-action-card">
+                        {% if perms.assets.change_virtualmachine %}
+                            <a class="text-link vm-edit-link" href="{% url 'assets:vm-edit' obj.pk %}">编辑详情</a>
+                        {% else %}
+                            <span class="table-muted">仅查看</span>
+                        {% endif %}
+                    </section>
+                </article>
+            {% empty %}
+                <div class="empty-inline empty-inline-v4">
+                    <strong>暂无数据</strong>
+                    <span>当前未查询到虚拟机资产记录。</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if is_paginated %}
+        <nav class="list-pagination-v4" aria-label="分页导航">
+            <div class="pagination-summary-v4">
+                <form class="pagination-size-v4" method="get">
+                    {% for key, value in per_page_hidden_pairs %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endfor %}
+                    <label for="vm-list-per-page-bottom">每页</label>
+                    <select id="vm-list-per-page-bottom" name="per_page" data-auto-submit-select>
+                        {% for option in paginate_by_options %}
+                            <option value="{{ option }}" {% if option == current_per_page %}selected{% endif %}>{{ option }} 条/页</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" name="page" value="1">
+                </form>
+                <div class="pagination-meta-v4">
+                    第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+                </div>
+            </div>
+            <div class="pagination-actions-v4">
+                {% if page_obj.has_previous %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page=1">首页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.previous_page_number }}">上一页</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.next_page_number }}">下一页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">末页</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}
+

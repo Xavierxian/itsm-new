@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} | ITSM 平台{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}管理资质主信息并维护采购/修改记录明细。{% endblock %}
+
+{% block content %}
+<section class="form-layout qualification-layout-v2">
+    <article class="surface-card surface-card-spacious subpage-panel-v2 qualification-main-card-v2">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow-label">Qualification</span>
+                <h3>{{ page_title }}</h3>
+            </div>
+        </div>
+
+        <form
+            method="post"
+            class="editor-form qualification-form-v2"
+            novalidate
+            data-submit-label="{{ submit_label|default:'保存' }}"
+            data-delete-confirm="{{ delete_confirm_text|default:'确认删除这条记录吗？' }}"
+        >
+            {% csrf_token %}
+
+            <section class="qualification-section-v2">
+                <h4>资质信息</h4>
+                <div class="editor-grid">
+                    {% for field in form %}
+                        <div class="field {% if field.errors %}has-error{% endif %}">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="field-hint">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <small class="field-error">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="qualification-section-v2 qualification-detail-section-v2">
+                <div class="qualification-detail-head-v2">
+                    <h4>修改记录（采购明细）</h4>
+                    <button class="secondary-button" type="button" id="qualification-add-detail">新增记录</button>
+                </div>
+
+                {{ detail_formset.management_form }}
+                {% if detail_formset.non_form_errors %}
+                    <div class="qualification-formset-errors-v2">{{ detail_formset.non_form_errors }}</div>
+                {% endif %}
+
+                <div class="table-shell qualification-detail-shell-v2">
+                    <table class="data-table qualification-detail-table-v2">
+                        <thead>
+                            <tr>
+                                <th>创建时间</th>
+                                <th>成本金额</th>
+                                <th>到期日期</th>
+                                <th>备注</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qualification-detail-body">
+                            {% for detail_form in detail_formset.forms %}
+                                <tr class="qualification-detail-row-v2" data-detail-row data-form-index="{{ forloop.counter0 }}">
+                                    {% for hidden in detail_form.hidden_fields %}
+                                        {{ hidden }}
+                                    {% endfor %}
+                                    <td>
+                                        {{ detail_form.create_time }}
+                                        {% if detail_form.create_time.errors %}
+                                            <small class="qualification-inline-error-v2">{{ detail_form.create_time.errors|striptags }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ detail_form.cost_amount }}
+                                        {% if detail_form.cost_amount.errors %}
+                                            <small class="qualification-inline-error-v2">{{ detail_form.cost_amount.errors|striptags }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ detail_form.expire_date }}
+                                        {% if detail_form.expire_date.errors %}
+                                            <small class="qualification-inline-error-v2">{{ detail_form.expire_date.errors|striptags }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ detail_form.remark }}
+                                        {% if detail_form.remark.errors %}
+                                            <small class="qualification-inline-error-v2">{{ detail_form.remark.errors|striptags }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="qualification-detail-action-v2">
+                                        <div class="qualification-delete-field-v2">{{ detail_form.DELETE }}</div>
+                                        <div class="qualification-detail-action-buttons-v2">
+                                            <button class="secondary-button" type="button" data-detail-remove>删除</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr data-detail-empty-state>
+                                    <td colspan="5" class="table-muted">暂无明细，可点击“新增记录”。</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="editor-actions">
+                <a class="secondary-button" href="{{ request.META.HTTP_REFERER|default:request.path }}">返回</a>
+                {% if show_delete_button %}
+                    <button class="danger-button js-action-trigger" type="button" data-action="delete" data-label="{{ delete_label|default:'删除' }}">{{ delete_label|default:'删除' }}</button>
+                {% endif %}
+                <button class="primary-button js-action-trigger" type="button" data-action="submit" data-label="{{ submit_label|default:'保存' }}">{{ submit_label|default:'保存' }}</button>
+            </div>
+        </form>
+    </article>
+
+    <aside class="surface-card form-aside">
+        <span class="eyebrow-label">Audit Notice</span>
+        <h3>操作将写入审计日志</h3>
+        <div class="stack-list">
+            <div class="stack-row">
+                <span>主记录</span>
+                <strong>资质管理</strong>
+            </div>
+            <div class="stack-row">
+                <span>子记录</span>
+                <strong>修改记录（采购明细）</strong>
+            </div>
+            <div class="stack-row">
+                <span>安全策略</span>
+                <strong>CSRF / 权限校验 / 操作审计</strong>
+            </div>
+        </div>
+    </aside>
+</section>
+
+<template id="qualification-detail-empty-template">
+    <tr class="qualification-detail-row-v2" data-detail-row data-form-index="__prefix__">
+        {% for hidden in detail_formset.empty_form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        <td>{{ detail_formset.empty_form.create_time }}</td>
+        <td>{{ detail_formset.empty_form.cost_amount }}</td>
+        <td>{{ detail_formset.empty_form.expire_date }}</td>
+        <td>{{ detail_formset.empty_form.remark }}</td>
+        <td class="qualification-detail-action-v2">
+            <div class="qualification-delete-field-v2">{{ detail_formset.empty_form.DELETE }}</div>
+            <div class="qualification-detail-action-buttons-v2">
+                <button class="secondary-button" type="button" data-detail-remove>删除</button>
+            </div>
+        </td>
+    </tr>
+</template>
+
+<div class="confirm-modal" id="action-confirm-modal" hidden>
+    <div class="confirm-modal-backdrop" data-modal-close></div>
+    <div class="confirm-modal-card" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-message">
+        <span class="eyebrow-label">Operation Confirm</span>
+        <h3 id="confirm-modal-title">确认操作</h3>
+        <p id="confirm-modal-message">确认执行此操作吗？</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="secondary-button" id="confirm-modal-cancel">取消</button>
+            <button type="button" class="primary-button" id="confirm-modal-confirm">确认</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/qualification_form.js' %}"></script>
+{% endblock %}

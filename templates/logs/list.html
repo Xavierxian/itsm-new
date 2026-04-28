@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_description %}{{ page_description }}{% endblock %}
+
+{% block content %}
+<section class="surface-card surface-card-spacious subpage-panel-v2 log-page-v2">
+    <div class="log-page-head-v2">
+        <div>
+            <span class="eyebrow-label">{{ category_label }}</span>
+            <h3>{{ page_title }}</h3>
+            <p>共 {{ total_count }} 条记录，按时间倒序展示。</p>
+        </div>
+        <form class="log-filter-v2" method="get">
+            <div class="log-filter-main-v2">
+                <input type="search" name="q" placeholder="{{ search_placeholder }}" value="{{ query }}">
+                {% if filter_name %}
+                    <select name="{{ filter_name }}">
+                        <option value="">全部</option>
+                        {% for value, label in filter_options %}
+                            <option value="{{ value }}" {% if value == current_filter %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+                <button class="secondary-button" type="submit">筛选</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="log-stream-v2">
+        {% for entry in entries %}
+            <article class="log-entry-v2 tone-{{ entry.tone }}">
+                <div class="log-entry-top-v2">
+                    <div class="log-entry-title-v2">
+                        <span class="log-entry-kicker-v2">{{ entry.category }}</span>
+                        <h4>{{ entry.title }}</h4>
+                    </div>
+                    <span class="log-badge-v2 tone-{{ entry.tone }}">{{ entry.badge }}</span>
+                </div>
+
+                <div class="log-meta-v2">{{ entry.meta }}</div>
+                <p class="log-summary-v2">{{ entry.summary }}</p>
+
+                {% if entry.details %}
+                    <div class="log-detail-grid-v2">
+                        {% for row in entry.details %}
+                            <div class="log-detail-item-v2">
+                                <span>{{ row.label }}</span>
+                                <strong>{{ row.value }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if entry.change_rows %}
+                    <div class="log-change-box-v2">
+                        <span class="log-change-title-v2">字段变更明细</span>
+                        <div class="log-change-list-v2">
+                            {% for row in entry.change_rows %}
+                                <div class="log-change-row-v2">
+                                    <span>{{ row.label }}</span>
+                                    <strong>{{ row.value }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <div class="empty-inline">暂无日志记录。</div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+        <nav class="list-pagination-v4" aria-label="分页导航">
+            <div class="pagination-meta-v4">
+                第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页
+            </div>
+            <div class="pagination-actions-v4">
+                {% if page_obj.has_previous %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page=1">首页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.previous_page_number }}">上一页</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.next_page_number }}">下一页</a>
+                    <a class="secondary-button" href="?{% if pagination_query %}{{ pagination_query }}&{% endif %}page={{ page_obj.paginator.num_pages }}">末页</a>
+                {% endif %}
+            </div>
+        </nav>
+    {% endif %}
+</section>
+{% endblock %}
