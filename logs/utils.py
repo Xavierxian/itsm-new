@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from core.middleware import get_current_user, get_request_trace_id
-from core.network import get_request_access_ips, get_request_client_ip
+from core.network import get_access_ips
 from core.security import is_sensitive_field, redact_mapping
 from logs.models import AppLogIndex, LoginLog, OperationAuditLog, ResourceChangeLog, SecurityEventLog, TaskExecutionLog
 
@@ -65,7 +65,10 @@ AUDIT_FIELD_WHITELIST = {
 
 
 def get_client_ip(request):
-    return get_request_client_ip(request)
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")
 
 
 def serialize_instance(instance):
@@ -89,7 +92,7 @@ def serialize_instance(instance):
 
 
 def log_login_attempt(request, success, user=None, username="", failure_reason=""):
-    private_ip, public_ip, _ = get_request_access_ips(request)
+    private_ip, public_ip, _ = get_access_ips()
     LoginLog.objects.create(
         user=user,
         username=username or getattr(user, "username", ""),
