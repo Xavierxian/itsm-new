@@ -552,7 +552,10 @@ class QualificationManagementListView(SearchableListView):
                 "label": row["status"] or "未填写状态",
                 "accent_class": accent_cycle[index % len(accent_cycle)],
                 "icon": "network",
-                "filter_url": self.build_list_url(status="__empty__" if not row["status"] else row["status"]),
+                "filter_url": self.build_list_url(
+                    status="__empty__" if not row["status"] else row["status"],
+                    expiry_scope="",
+                ),
                 "is_active": (
                     active_status_filter == "__empty__"
                     if not row["status"]
