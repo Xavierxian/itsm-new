@@ -7782,6 +7782,20 @@ body {
     resize: none;
 }
 
+.qualification-form-v2 .qualification-section-v2 .field textarea.js-autosize-textarea {
+    height: auto;
+    min-height: 56px;
+    overflow-y: hidden;
+}
+
+.qualification-form-v2 .qualification-section-v2 .field textarea[name="remark"] {
+    height: auto !important;
+    min-height: 88px !important;
+    max-height: none !important;
+    overflow-y: hidden !important;
+    resize: none !important;
+}
+
 .qualification-section-v2 {
     display: grid;
     gap: 12px;
@@ -7791,6 +7805,29 @@ body {
     margin: 0;
     color: #163960;
     letter-spacing: -0.01em;
+}
+
+.qualification-remark-section-v2 {
+    max-width: 760px;
+}
+
+.qualification-remark-field-v2 {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px 16px;
+    border: 1px solid #d8e3f0;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fbfdff 0%, #f3f8ff 100%);
+}
+
+.qualification-remark-field-v2 label {
+    margin: 0;
+}
+
+.qualification-form-v2 .qualification-remark-field-v2 textarea[name="remark"] {
+    min-height: 132px !important;
+    border-radius: 14px;
+    background: #ffffff;
 }
 
 .qualification-detail-head-v2 {

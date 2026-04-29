@@ -236,9 +236,9 @@ class QualificationManagementForm(SecretFieldFormMixin, forms.ModelForm):
             "remark",
         ]
         widgets = {
-            "password": forms.PasswordInput(render_value=False),
+            "password": forms.TextInput(),
             "usage": forms.Textarea(attrs={"rows": 2}),
-            "remark": forms.Textarea(attrs={"rows": 2}),
+            "remark": forms.Textarea(attrs={"rows": 2, "class": "js-autosize-textarea"}),
             "expire_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
@@ -247,6 +247,8 @@ class QualificationManagementForm(SecretFieldFormMixin, forms.ModelForm):
         self.fields["expire_date"].input_formats = ["%Y-%m-%d"]
         if self.instance and self.instance.expire_date:
             self.initial["expire_date"] = self.instance.expire_date.strftime("%Y-%m-%d")
+        if self.instance and self.instance.pk:
+            self.initial["password"] = self.instance.password_plaintext or ""
 
         current_status = (getattr(self.instance, "status", "") or "").strip()
         if current_status and current_status not in [value for value, _ in self.STATUS_CHOICES]:

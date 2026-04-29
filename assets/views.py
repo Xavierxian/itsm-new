@@ -54,9 +54,8 @@ def sync_qualification_snapshot_from_latest_detail(qualification):
 
     qualification.cost = _normalize_cost_amount_for_parent(latest_detail.cost_amount)
     qualification.expire_date = latest_detail.expire_date.date() if latest_detail.expire_date else None
-    qualification.remark = (latest_detail.remark or "").strip() or None
     qualification.last_update_time = timezone.now()
-    qualification.save(update_fields=["cost", "expire_date", "remark", "last_update_time"])
+    qualification.save(update_fields=["cost", "expire_date", "last_update_time"])
 
 
 class VirtualMachineListView(SearchableListView):

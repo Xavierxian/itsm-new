@@ -1,6 +1,26 @@
 (function () {
     "use strict";
 
+    function autoResizeTextarea(textarea) {
+        if (!textarea) {
+            return;
+        }
+        textarea.style.height = "auto";
+        textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    function bindAutoResizeTextareas() {
+        var textareas = document.querySelectorAll("textarea.js-autosize-textarea, .qualification-form-v2 textarea[name='remark']");
+        Array.prototype.forEach.call(textareas, function (textarea) {
+            autoResizeTextarea(textarea);
+            textarea.addEventListener("input", function () {
+                autoResizeTextarea(textarea);
+            });
+        });
+    }
+
+    bindAutoResizeTextareas();
+
     var addButton = document.getElementById("qualification-add-detail");
     var body = document.getElementById("qualification-detail-body");
     var template = document.getElementById("qualification-detail-empty-template");
