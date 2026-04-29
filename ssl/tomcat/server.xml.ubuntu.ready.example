@@ -1,0 +1,25 @@
+﻿<!-- Tomcat SSL Connector for Ubuntu -->
+<!-- 用法：把下面 Connector 复制到 $CATALINA_BASE/conf/server.xml 的 <Service name="Catalina"> 内 -->
+<Connector
+    port="443"
+    protocol="org.apache.coyote.http11.Http11NioProtocol"
+    SSLEnabled="true"
+    maxThreads="200"
+    scheme="https"
+    secure="true"
+    clientAuth="false"
+    sslProtocol="TLS"
+    URIEncoding="UTF-8"
+    connectionTimeout="20000"
+    redirectPort="443">
+    <SSLHostConfig>
+        <Certificate
+            certificateKeystoreType="JKS"
+            certificateKeystoreFile="/opt/itsm-new/ssl/tomcat/baison.net.jks"
+            certificateKeystorePassword="CHANGE_ME"
+            type="RSA" />
+    </SSLHostConfig>
+</Connector>
+
+<!-- 可选：HTTP 自动跳到 HTTPS -->
+<Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443" />

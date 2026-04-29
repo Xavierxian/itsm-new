@@ -1,0 +1,22 @@
+﻿# Ignore real certificate/private key files
+*.pfx
+*.p12
+*.jks
+*.key
+*.crt
+*.cer
+*.pem
+*.der
+
+# Password or secret text files
+*password*.txt
+*.secret
+
+# Keep examples/docs/scripts only
+!README.md
+!iis/
+!tomcat/
+!*.example
+!*.sample
+!*.template
+!install_*.sh

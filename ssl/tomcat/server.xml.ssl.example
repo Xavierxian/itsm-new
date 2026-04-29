@@ -1,0 +1,24 @@
+﻿<!-- 复制到 Tomcat conf/server.xml 的 <Service> 节点内 -->
+<Connector
+    port="443"
+    protocol="org.apache.coyote.http11.Http11NioProtocol"
+    SSLEnabled="true"
+    maxThreads="200"
+    scheme="https"
+    secure="true"
+    clientAuth="false"
+    sslProtocol="TLS"
+    URIEncoding="UTF-8">
+
+    <SSLHostConfig>
+        <Certificate
+            certificateKeystoreType="PKCS12"
+            certificateKeystoreFile="C:/path/to/itsm-new/ssl/tomcat/keystore.p12"
+            certificateKeystorePassword="CHANGE_ME"
+            type="RSA" />
+    </SSLHostConfig>
+</Connector>
+
+<!-- 可选：80 跳转 443（需配合应用/代理规则）
+<Connector port="80" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="443" />
+-->
