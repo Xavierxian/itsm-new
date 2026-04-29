@@ -481,10 +481,26 @@ class QualificationManagementListView(SearchableListView):
     def get_queryset(self):
         queryset = self._base_queryset()
         status_filter = self.request.GET.get("status", "").strip()
+        expiry_scope = self.request.GET.get("expiry_scope", "").strip().lower()
+        today = timezone.localdate()
+        within_30_days = today + timedelta(days=30)
+
         if status_filter == "__empty__":
             queryset = queryset.filter(Q(status__isnull=True) | Q(status__exact=""))
         elif status_filter:
             queryset = queryset.filter(status__iexact=status_filter)
+
+        if expiry_scope == "soon":
+            queryset = queryset.filter(
+                expire_date__isnull=False,
+                expire_date__gte=today,
+                expire_date__lte=within_30_days,
+            )
+        elif expiry_scope == "expired":
+            queryset = queryset.filter(
+                expire_date__isnull=False,
+                expire_date__lt=today,
+            )
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -495,6 +511,7 @@ class QualificationManagementListView(SearchableListView):
         expiring_soon_count = base_queryset.filter(expire_date__isnull=False, expire_date__gte=today, expire_date__lte=within_30_days).count()
         expired_count = base_queryset.filter(expire_date__isnull=False, expire_date__lt=today).count()
         active_status_filter = (self.request.GET.get("status", "").strip()).casefold()
+        active_expiry_scope = (self.request.GET.get("expiry_scope", "").strip()).casefold()
 
         context["summary_cards"] = [
             {
@@ -502,24 +519,24 @@ class QualificationManagementListView(SearchableListView):
                 "label": "Total",
                 "accent_class": "is-primary",
                 "icon": "stack",
-                "filter_url": self.build_list_url(status=""),
-                "is_active": not active_status_filter,
+                "filter_url": self.build_list_url(status="", expiry_scope=""),
+                "is_active": not active_status_filter and not active_expiry_scope,
             },
             {
                 "value": expiring_soon_count,
                 "label": "30天内到期",
                 "accent_class": "is-warning",
                 "icon": "warning",
-                "filter_url": "",
-                "is_active": False,
+                "filter_url": self.build_list_url(expiry_scope="soon"),
+                "is_active": active_expiry_scope == "soon",
             },
             {
                 "value": expired_count,
                 "label": "已过期",
                 "accent_class": "is-info",
                 "icon": "warning",
-                "filter_url": "",
-                "is_active": False,
+                "filter_url": self.build_list_url(expiry_scope="expired"),
+                "is_active": active_expiry_scope == "expired",
             },
         ]
 
